@@ -281,7 +281,7 @@ textarea {
 
 .table-layout {
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 8px;
     max-width: 600px;
     margin: 0 auto;
@@ -739,7 +739,7 @@ textarea {
     }
 
     .table-layout {
-        grid-template-columns: repeat(8, 1fr);
+        grid-template-columns: repeat(6, 1fr);
         gap: 4px;
     }
 

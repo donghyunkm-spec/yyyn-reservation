@@ -65,11 +65,14 @@ function initializeTableLayout() {
     // Row 3:          9        8           7
     // Row 4: 17 16             15 14       13
     
+    // 변경
     const layout = [
-        [6, 5, '', 4, 3, '', 2, '', 1],
-        ['', '', '', 12, '', '', 11, '', '', 10],
-        ['', '', '', 9, '', '', 8, '', '', 7],
-        [17, 16, '', '', '', '', 15, 14, '', 13]
+        [13, '', 10, 7, '', 1],
+        [14, '', 11, 8, '', 2],
+        [15, '', '', '', '', 3],
+        [16, '', 12, 9, '', 4],
+        [17, '', '', '', '', 5],
+        ['', '', '', '', '', 6]
     ];
     
     const tableLayout = document.createElement('div');
@@ -663,11 +666,14 @@ function initializeEditTableLayout(selectedTableIds, reservationId) {
     const container = document.getElementById('editTableSelection');
     if (!container) return;
     
+    // 변경 (동일하게)
     const layout = [
-        [6, 5, '', 4, 3, '', 2, '', 1],
-        ['', '', '', 12, '', '', 11, '', '', 10],
-        ['', '', '', 9, '', '', 8, '', '', 7],
-        [17, 16, '', '', '', '', 15, 14, '', 13]
+        [13, '', 10, 7, '', 1],
+        [14, '', 11, 8, '', 2],
+        [15, '', '', '', '', 3],
+        [16, '', 12, 9, '', 4],
+        [17, '', '', '', '', 5],
+        ['', '', '', '', '', 6]
     ];
     
     const tableLayout = document.createElement('div');
