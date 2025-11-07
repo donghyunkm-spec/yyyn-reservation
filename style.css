@@ -1,4 +1,4 @@
-/* 전체 스타일 */
+/* ì „ì²´ ìŠ¤íƒ€ì¼ */
 * {
     margin: 0;
     padding: 0;
@@ -17,7 +17,7 @@ body {
     margin: 0 auto;
 }
 
-/* 헤더 */
+/* í—¤ë” */
 .header {
     text-align: center;
     margin-bottom: 30px;
@@ -35,7 +35,7 @@ body {
     opacity: 0.9;
 }
 
-/* 상태 바 */
+/* ìƒíƒœ ë°” */
 .status-bar {
     display: flex;
     justify-content: space-between;
@@ -76,7 +76,7 @@ body {
     border-color: #4CAF50;
 }
 
-/* 탭 */
+/* íƒ­ */
 .tabs {
     display: flex;
     margin-bottom: 20px;
@@ -116,7 +116,7 @@ body {
     display: block;
 }
 
-/* 폼 컨테이너 */
+/* í¼ ì»¨í…Œì´ë„ˆ */
 .form-container, .status-container {
     background: white;
     padding: 20px;
@@ -131,7 +131,7 @@ body {
     font-size: clamp(1.3em, 4vw, 1.8em);
 }
 
-/* 폼 그룹 */
+/* í¼ ê·¸ë£¹ */
 .form-group {
     margin-bottom: 20px;
 }
@@ -158,21 +158,31 @@ input[type="text"],
 input[type="tel"],
 input[type="date"],
 input[type="time"],
-input[type="number"] {
+input[type="number"],
+select,
+textarea {
     width: 100%;
     padding: 12px 15px;
     border: 2px solid #ddd;
     border-radius: 8px;
     font-size: 16px;
     transition: border-color 0.3s ease;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-input:focus {
+input:focus,
+select:focus,
+textarea:focus {
     outline: none;
     border-color: #4CAF50;
 }
 
-/* 인원수 입력 */
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* ì¸ì›ìˆ˜ ìž…ë ¥ */
 .number-input {
     display: flex;
     align-items: center;
@@ -209,7 +219,7 @@ input:focus {
     font-weight: bold;
 }
 
-/* 선호도 선택 */
+/* ì„ í˜¸ë„ ì„ íƒ */
 .preference-selector {
     display: flex;
     gap: 10px;
@@ -246,7 +256,7 @@ input:focus {
     margin-bottom: 5px;
 }
 
-/* 테이블 선택 안내 */
+/* í…Œì´ë¸” ì„ íƒ ì•ˆë‚´ */
 .table-availability-info {
     background: #fff3cd;
     border: 1px solid #ffc107;
@@ -261,7 +271,7 @@ input:focus {
     font-size: 14px;
 }
 
-/* 테이블 레이아웃 (17개 테이블) */
+/* í…Œì´ë¸” ë ˆì´ì•„ì›ƒ (17ê°œ í…Œì´ë¸”) */
 .table-selection {
     background: #f8f9fa;
     padding: 15px;
@@ -318,7 +328,7 @@ input:focus {
     cursor: default;
 }
 
-/* 제출 버튼 */
+/* ì œì¶œ ë²„íŠ¼ */
 .submit-btn {
     width: 100%;
     padding: 15px;
@@ -348,7 +358,7 @@ input:focus {
     transform: none;
 }
 
-/* 예약현황 탭 */
+/* ì˜ˆì•½í˜„í™© íƒ­ */
 .status-header {
     display: flex;
     justify-content: space-between;
@@ -365,7 +375,7 @@ input:focus {
     font-size: 16px;
 }
 
-/* 통계 카드 */
+/* í†µê³„ ì¹´ë“œ */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -393,7 +403,7 @@ input:focus {
     font-weight: bold;
 }
 
-/* 시간대별 예약 */
+/* ì‹œê°„ëŒ€ë³„ ì˜ˆì•½ */
 .time-slots {
     margin-bottom: 30px;
 }
@@ -487,7 +497,7 @@ input:focus {
     background: #d32f2f;
 }
 
-/* 예약 테이블 */
+/* ì˜ˆì•½ í…Œì´ë¸” */
 .reservation-list {
     margin-top: 30px;
 }
@@ -533,7 +543,7 @@ input:focus {
     padding: 30px !important;
 }
 
-/* 알림 */
+/* ì•Œë¦¼ */
 #alert-container {
     position: fixed;
     top: 20px;
@@ -579,7 +589,7 @@ input:focus {
     border: 1px solid #bee5eb;
 }
 
-/* 알림 (notification) */
+/* ì•Œë¦¼ (notification) */
 .notification {
     position: fixed;
     top: 20px;
@@ -615,7 +625,7 @@ input:focus {
     color: white;
 }
 
-/* 로딩 오버레이 */
+/* ë¡œë”© ì˜¤ë²„ë ˆì´ */
 .loading-overlay {
     display: none;
     position: fixed;
@@ -655,7 +665,7 @@ input:focus {
     margin-top: 20px;
 }
 
-/* 모달 */
+/* ëª¨ë‹¬ */
 .modal {
     display: none;
     position: fixed;
@@ -718,7 +728,7 @@ input:focus {
     color: #333;
 }
 
-/* 반응형 */
+/* ë°˜ì‘í˜• */
 @media (max-width: 768px) {
     .container {
         padding: 0;

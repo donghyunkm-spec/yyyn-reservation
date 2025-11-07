@@ -26,6 +26,7 @@
         <div class="tabs">
             <button class="tab active" onclick="showTab('reservation')">예약하기</button>
             <button class="tab" onclick="showTab('status')">예약현황</button>
+            <button class="tab" onclick="showTab('table')">예약현황(표)</button>
         </div>
 
         <!-- 예약하기 탭 -->
@@ -49,22 +50,6 @@
                         </div>
                     </div>
 
-                    <!-- 룸여부 (의미없지만 UI 유지) -->
-                    <div class="form-group">
-                        <label>좌석 선호 <span class="optional">(선택사항)</span></label>
-                        <div class="preference-selector">
-                            <div class="preference-option" onclick="selectPreference('none')">
-                                <span class="emoji">🤷</span>
-                                <span>관계없음</span>
-                            </div>
-                            <div class="preference-option" onclick="selectPreference('hall')">
-                                <span class="emoji">🏠</span>
-                                <span>홀</span>
-                            </div>
-                        </div>
-                        <input type="hidden" id="preference" value="none">
-                    </div>
-
                     <!-- 예약일자 -->
                     <div class="form-group">
                         <label for="date">예약일자 <span class="required">*</span></label>
@@ -74,7 +59,31 @@
                     <!-- 시간 -->
                     <div class="form-group">
                         <label for="time">예약시간 <span class="required">*</span></label>
-                        <input type="time" id="time" required step="1800">
+                        <select id="time" required>
+                            <option value="">시간 선택</option>
+                            <option value="11:00">11:00</option>
+                            <option value="11:30">11:30</option>
+                            <option value="12:00">12:00</option>
+                            <option value="12:30">12:30</option>
+                            <option value="13:00">13:00</option>
+                            <option value="13:30">13:30</option>
+                            <option value="14:00">14:00</option>
+                            <option value="14:30">14:30</option>
+                            <option value="15:00">15:00</option>
+                            <option value="15:30">15:30</option>
+                            <option value="16:00">16:00</option>
+                            <option value="16:30">16:30</option>
+                            <option value="17:00">17:00</option>
+                            <option value="17:30">17:30</option>
+                            <option value="18:00">18:00</option>
+                            <option value="18:30">18:30</option>
+                            <option value="19:00">19:00</option>
+                            <option value="19:30">19:30</option>
+                            <option value="20:00">20:00</option>
+                            <option value="20:30">20:30</option>
+                            <option value="21:00">21:00</option>
+                            <option value="21:30">21:30</option>
+                        </select>
                     </div>
 
                     <!-- 연락처 -->
@@ -83,12 +92,15 @@
                         <input type="tel" id="phone" placeholder="010-0000-0000">
                     </div>
 
+                    <!-- 예약 요구사항 -->
+                    <div class="form-group">
+                        <label for="requests">예약 요구사항 <span class="optional">(선택사항)</span></label>
+                        <textarea id="requests" placeholder="특별한 요청사항이 있으시면 입력해주세요" rows="3"></textarea>
+                    </div>
+
                     <!-- 테이블 선택 -->
                     <div class="form-group">
                         <label>테이블 선택 <span class="required">*</span></label>
-                        <div class="table-availability-info">
-                            <p>📅 날짜와 시간을 먼저 선택하면 사용 가능한 테이블을 확인할 수 있습니다.</p>
-                        </div>
                         <div class="table-selection" id="table-selection">
                             <!-- 테이블 레이아웃이 여기에 생성됩니다 -->
                         </div>
@@ -152,6 +164,36 @@
                             <tbody id="reservationTableBody">
                                 <tr>
                                     <td colspan="6" class="no-data">예약이 없습니다.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 예약현황(표) 탭 -->
+        <div id="table-tab" class="tab-content">
+            <div class="status-container">
+                <h2>📋 예약현황 (전체 목록)</h2>
+                <div class="reservation-list">
+                    <div class="table-responsive">
+                        <table class="reservation-table" id="allReservationTable">
+                            <thead>
+                                <tr>
+                                    <th>날짜</th>
+                                    <th>시간</th>
+                                    <th>예약자명</th>
+                                    <th>인원</th>
+                                    <th>테이블명</th>
+                                    <th>연락처</th>
+                                    <th>요구사항</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allReservationTableBody">
+                                <tr>
+                                    <td colspan="8" class="no-data">예약이 없습니다.</td>
                                 </tr>
                             </tbody>
                         </table>

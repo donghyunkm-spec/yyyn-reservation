@@ -114,7 +114,7 @@ app.get('/api/reservations', (req, res) => {
 // API: 새 예약 생성
 app.post('/api/reservations', async (req, res) => {
     try {
-        const { name, people, preference, date, time, phone, tables } = req.body;
+        const { name, people, date, time, phone, requests, tables } = req.body;
         
         // 유효성 검사
         if (!name || !people || !date || !time || !tables || tables.length === 0) {
@@ -142,10 +142,10 @@ app.post('/api/reservations', async (req, res) => {
             id: Date.now().toString(),
             name,
             people: parseInt(people),
-            preference: preference || 'none',
             date,
             time,
             phone: phone || '',
+            requests: requests || '',
             tables,
             status: 'active',
             timestamp: new Date().toISOString()
@@ -180,7 +180,7 @@ app.post('/api/reservations', async (req, res) => {
 app.put('/api/reservations/:id', async (req, res) => {
     try {
         const reservationId = req.params.id;
-        const { name, people, preference, date, time, phone, tables } = req.body;
+        const { name, people, date, time, phone, requests, tables } = req.body;
         
         if (!tables || tables.length === 0) {
             return res.status(400).json({ 
@@ -216,10 +216,10 @@ app.put('/api/reservations/:id', async (req, res) => {
             ...reservations[index],
             name,
             people: parseInt(people),
-            preference: preference || 'none',
             date,
             time,
             phone: phone || '',
+            requests: requests || '',
             tables,
             updatedAt: new Date().toISOString()
         };

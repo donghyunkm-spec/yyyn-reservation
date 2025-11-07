@@ -1,0 +1,50 @@
+# 2. Git 초기화
+git init
+
+# 3. 모든 파일 추가
+git add .
+
+# 4. 커밋
+git commit -m "첫 커밋: 예약 시스템 추가"
+
+# 5. GitHub 저장소 연결 (본인의 저장소 주소로 변경)
+git remote add origin https://github.com/donghyunkm-spec/yyyn-reservation.git
+
+# 6. 푸시
+git branch -M main
+git push -u origin main
+
+
+
+## 🚀 2. Railway에 배포하기
+
+### Step 1: Railway 가입 및 로그인
+1. https://railway.app 접속
+2. `Start a New Project` 또는 `Login` 클릭
+3. GitHub 계정으로 로그인 (추천)
+
+### Step 2: 새 프로젝트 생성
+1. Dashboard에서 `New Project` 클릭
+2. `Deploy from GitHub repo` 선택
+3. 방금 만든 저장소 선택
+   - 만약 저장소가 안 보이면 `Configure GitHub App` 클릭해서 권한 부여
+
+### Step 3: 환경 변수 설정
+1. 프로젝트 클릭
+2. `Variables` 탭 클릭
+3. `New Variable` 클릭
+4. 추가할 변수:
+```
+   Name: DATA_DIR
+   Value: /data
+```
+5. `Add` 클릭
+
+### Step 4: Volume 생성 (중요! - 데이터 저장용)
+1. 프로젝트에서 `+ New` 클릭
+2. `Volume` 선택
+3. 설정:
+```
+   Name: reservation-data (원하는 이름)
+   Mount Path: /data
+   Size: 1GB

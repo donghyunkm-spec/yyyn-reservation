@@ -12,11 +12,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     // 기본값 설정
     const dateInput = document.getElementById('date');
     const statusDateInput = document.getElementById('statusDate');
-    const timeInput = document.getElementById('time');
     
     if (dateInput) dateInput.value = getCurrentDate();
     if (statusDateInput) statusDateInput.value = getCurrentDate();
-    if (timeInput) timeInput.value = '18:00';
     
     // 소리 설정 로드
     const savedSoundSetting = localStorage.getItem('soundEnabled');
@@ -25,14 +23,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         updateSoundButtonUI();
     }
     
-    // 초기 선호도 선택
-    selectPreference('none');
-    
     // 테이블 레이아웃 초기화
     initializeTableLayout();
     
     // 날짜/시간 변경 시 테이블 가용성 업데이트
     if (dateInput) dateInput.addEventListener('change', updateTableAvailability);
+    const timeInput = document.getElementById('time');
     if (timeInput) timeInput.addEventListener('change', updateTableAvailability);
     
     // 데이터 로드
@@ -49,6 +45,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // 초기 UI 업데이트
     updateStatus();
+    updateAllReservationTable();
     
     console.log('✅ 예약 시스템이 초기화되었습니다.');
 });
@@ -63,15 +60,15 @@ function initializeTableLayout() {
     if (!container) return;
     
     // 테이블 레이아웃 (이미지 구조 기준)
-    // 6  5  |  4  3  |  2  |  1
-    //        | 12     | 11 |  8  7
-    //        |  9     |    | 10
-    // 17 16  |        | 15 14 | 13
+    // Row 1: 6  5     4  3     2     1
+    // Row 2:          12       11          10
+    // Row 3:          9        8           7
+    // Row 4: 17 16             15 14       13
     
     const layout = [
         [6, 5, '', 4, 3, '', 2, '', 1],
-        ['', '', '', 12, '', '', 11, '', '', 8, 7],
-        ['', '', '', 9, '', '', '', '', 10, ''],
+        ['', '', '', 12, '', '', 11, '', '', 10],
+        ['', '', '', 9, '', '', 8, '', '', 7],
         [17, 16, '', '', '', '', 15, 14, '', 13]
     ];
     
@@ -189,6 +186,8 @@ function showTab(tabName) {
     
     if (tabName === 'status') {
         updateStatus();
+    } else if (tabName === 'table') {
+        updateAllReservationTable();
     }
 }
 
@@ -197,15 +196,6 @@ function changePeople(delta) {
     let value = parseInt(input.value) || 2;
     value = Math.max(1, Math.min(68, value + delta));
     input.value = value;
-}
-
-function selectPreference(pref) {
-    document.querySelectorAll('.preference-option').forEach(opt => {
-        opt.classList.remove('selected');
-    });
-    
-    event.target.closest('.preference-option').classList.add('selected');
-    document.getElementById('preference').value = pref;
 }
 
 function showAlert(message, type = 'info') {
@@ -293,6 +283,7 @@ async function loadReservations() {
         if (data.success) {
             reservations = data.reservations;
             updateStatus();
+            updateAllReservationTable();
         }
     } catch (error) {
         console.error('예약 로드 실패:', error);
@@ -316,10 +307,10 @@ async function submitReservation(event) {
     const formData = {
         name: document.getElementById('name').value,
         people: parseInt(document.getElementById('people').value),
-        preference: document.getElementById('preference').value,
         date: document.getElementById('date').value,
         time: document.getElementById('time').value,
         phone: document.getElementById('phone').value || '',
+        requests: document.getElementById('requests').value || '',
         tables: Array.from(selectedTables)
     };
     
@@ -344,7 +335,6 @@ async function submitReservation(event) {
             document.getElementById('selectedTables').value = '';
             document.getElementById('date').value = getCurrentDate();
             document.getElementById('people').value = 2;
-            selectPreference('none');
             
             // 데이터 새로고침
             await loadReservations();
@@ -459,6 +449,7 @@ function displayTimeSlots(reservations) {
                         <div class="reservation-details">
                             👥 ${r.people}명 
                             ${r.phone ? `| 📞 ${r.phone}` : ''}
+                            ${r.requests ? `<br>📝 ${r.requests}` : ''}
                         </div>
                     </div>
                     <div class="reservation-actions">
@@ -517,6 +508,60 @@ function updateReservationTable(todayReservations) {
 }
 
 // =========================
+// 예약현황(표) 탭 업데이트
+// =========================
+
+function updateAllReservationTable() {
+    const tbody = document.getElementById('allReservationTableBody');
+    if (!tbody) return;
+    
+    const today = getCurrentDate();
+    
+    // 당일부터 미래 예약만 필터링
+    const futureReservations = reservations.filter(r => 
+        r.status === 'active' && r.date >= today
+    );
+    
+    if (futureReservations.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="no-data">예약이 없습니다.</td></tr>';
+        return;
+    }
+    
+    // 날짜, 시간순 정렬
+    const sortedReservations = [...futureReservations].sort((a, b) => {
+        if (a.date !== b.date) {
+            return a.date.localeCompare(b.date);
+        }
+        return a.time.localeCompare(b.time);
+    });
+    
+    let html = '';
+    sortedReservations.forEach(r => {
+        const tableDisplay = r.tables.map(t => 
+            t.replace('table-', 'T')
+        ).join(', ');
+        
+        html += `
+            <tr>
+                <td>${r.date}</td>
+                <td>${r.time}</td>
+                <td>${r.name}</td>
+                <td>${r.people}명</td>
+                <td>${tableDisplay}</td>
+                <td>${r.phone || '-'}</td>
+                <td>${r.requests || '-'}</td>
+                <td>
+                    <button class="btn btn-edit" onclick="editReservation('${r.id}')">수정</button>
+                    <button class="btn btn-delete" onclick="deleteReservation('${r.id}')">삭제</button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html;
+}
+
+// =========================
 // 예약 수정
 // =========================
 
@@ -526,6 +571,14 @@ function editReservation(id) {
         showAlert('예약을 찾을 수 없습니다.', 'error');
         return;
     }
+    
+    // 시간 옵션 생성
+    const timeOptions = ['11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', 
+                        '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', 
+                        '19:00', '19:30', '20:00', '20:30', '21:00', '21:30'];
+    const timeOptionsHtml = timeOptions.map(t => 
+        `<option value="${t}" ${t === reservation.time ? 'selected' : ''}>${t}</option>`
+    ).join('');
     
     // 모달 생성
     const modal = document.createElement('div');
@@ -558,12 +611,19 @@ function editReservation(id) {
                 
                 <div class="form-group">
                     <label for="editTime">시간 <span class="required">*</span></label>
-                    <input type="time" id="editTime" value="${reservation.time}" required onchange="updateEditTableAvailability()">
+                    <select id="editTime" required onchange="updateEditTableAvailability()">
+                        ${timeOptionsHtml}
+                    </select>
                 </div>
                 
                 <div class="form-group">
                     <label for="editPhone">연락처</label>
                     <input type="tel" id="editPhone" value="${reservation.phone || ''}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editRequests">예약 요구사항</label>
+                    <textarea id="editRequests" rows="3">${reservation.requests || ''}</textarea>
                 </div>
                 
                 <div class="form-group">
@@ -582,7 +642,7 @@ function editReservation(id) {
     document.body.appendChild(modal);
     
     // 수정용 테이블 레이아웃 초기화
-    initializeEditTableLayout(reservation.tables);
+    initializeEditTableLayout(reservation.tables, id);
     updateEditTableAvailability();
     
     // 모달 외부 클릭 시 닫기
@@ -594,17 +654,19 @@ function editReservation(id) {
 }
 
 let editSelectedTables = new Set();
+let currentEditId = '';
 
-function initializeEditTableLayout(selectedTableIds) {
+function initializeEditTableLayout(selectedTableIds, reservationId) {
     editSelectedTables = new Set(selectedTableIds);
+    currentEditId = reservationId;
     
     const container = document.getElementById('editTableSelection');
     if (!container) return;
     
     const layout = [
         [6, 5, '', 4, 3, '', 2, '', 1],
-        ['', '', '', 12, '', '', 11, '', '', 8, 7],
-        ['', '', '', 9, '', '', '', '', 10, ''],
+        ['', '', '', 12, '', '', 11, '', '', 10],
+        ['', '', '', 9, '', '', 8, '', '', 7],
         [17, 16, '', '', '', '', 15, 14, '', 13]
     ];
     
@@ -662,7 +724,6 @@ function toggleEditTableSelection(tableId) {
 function updateEditTableAvailability() {
     const date = document.getElementById('editDate').value;
     const time = document.getElementById('editTime').value;
-    const currentId = document.getElementById('editForm').getAttribute('data-id');
     
     if (!date || !time) {
         document.querySelectorAll('#editTableSelection .table-item').forEach(btn => {
@@ -673,7 +734,7 @@ function updateEditTableAvailability() {
     
     const conflictingReservations = reservations.filter(r => 
         r.status === 'active' && 
-        r.id !== currentId &&
+        r.id !== currentEditId &&
         r.date === date && 
         isTimeOverlap(r.time, time)
     );
@@ -722,10 +783,10 @@ async function updateReservation(event, id) {
     const updatedData = {
         name: document.getElementById('editName').value,
         people: parseInt(document.getElementById('editPeople').value),
-        preference: 'none',
         date: document.getElementById('editDate').value,
         time: document.getElementById('editTime').value,
         phone: document.getElementById('editPhone').value || '',
+        requests: document.getElementById('editRequests').value || '',
         tables: Array.from(editSelectedTables)
     };
     
