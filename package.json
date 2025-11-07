@@ -1,0 +1,16 @@
+{
+  "name": "restaurant-reservation-simple",
+  "version": "1.0.0",
+  "description": "간단한 음식점 예약 시스템 (17개 테이블)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["reservation", "restaurant"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}

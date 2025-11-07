@@ -1,0 +1,786 @@
+/* 전체 스타일 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 10px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 헤더 */
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    color: white;
+}
+
+.header h1 {
+    font-size: clamp(1.8em, 5vw, 2.5em);
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.header p {
+    font-size: clamp(1em, 3vw, 1.2em);
+    opacity: 0.9;
+}
+
+/* 상태 바 */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.connection-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.sound-btn {
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.sound-btn:hover {
+    transform: scale(1.1);
+    border-color: #4CAF50;
+}
+
+/* 탭 */
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.tab {
+    flex: 1;
+    padding: 15px 10px;
+    text-align: center;
+    cursor: pointer;
+    background: #f8f9fa;
+    border: none;
+    font-size: clamp(14px, 3vw, 16px);
+    font-weight: bold;
+    transition: all 0.3s ease;
+    color: #333;
+}
+
+.tab:hover {
+    background: #e9ecef;
+}
+
+.tab.active {
+    background: #4CAF50;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* 폼 컨테이너 */
+.form-container, .status-container {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.form-container h2, .status-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: clamp(1.3em, 4vw, 1.8em);
+}
+
+/* 폼 그룹 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+    font-size: 16px;
+}
+
+.required {
+    color: #f44336;
+}
+
+.optional {
+    color: #999;
+    font-weight: normal;
+    font-size: 14px;
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="date"],
+input[type="time"],
+input[type="number"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+input:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+/* 인원수 입력 */
+.number-input {
+    display: flex;
+    align-items: center;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.number-btn {
+    width: 60px;
+    height: 54px;
+    background: #f8f9fa;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #333;
+    transition: background 0.2s ease;
+}
+
+.number-btn:hover {
+    background: #e9ecef;
+}
+
+.number-btn:active {
+    background: #dee2e6;
+}
+
+.number-input input {
+    flex: 1;
+    border: none;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* 선호도 선택 */
+.preference-selector {
+    display: flex;
+    gap: 10px;
+}
+
+.preference-option {
+    flex: 1;
+    text-align: center;
+    padding: 15px 10px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: #f8f9fa;
+}
+
+.preference-option:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+}
+
+.preference-option.selected {
+    background: #4CAF50;
+    color: white;
+    border-color: #388E3C;
+    transform: scale(1.05);
+}
+
+.preference-option .emoji {
+    display: block;
+    font-size: 28px;
+    margin-bottom: 5px;
+}
+
+/* 테이블 선택 안내 */
+.table-availability-info {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 15px;
+}
+
+.table-availability-info p {
+    margin: 0;
+    color: #856404;
+    font-size: 14px;
+}
+
+/* 테이블 레이아웃 (17개 테이블) */
+.table-selection {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #ddd;
+}
+
+.table-layout {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.table-item {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: white;
+    color: #333;
+}
+
+.table-item:hover:not(.disabled):not(.empty) {
+    transform: scale(1.05);
+    border-color: #4CAF50;
+}
+
+.table-item.selected {
+    background: #4CAF50;
+    color: white;
+    border-color: #388E3C;
+    transform: scale(1.1);
+}
+
+.table-item.disabled {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.table-item.empty {
+    background: transparent;
+    border: none;
+    cursor: default;
+}
+
+/* 제출 버튼 */
+.submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 예약현황 탭 */
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.date-selector input {
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+/* 통계 카드 */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.stat-label {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+/* 시간대별 예약 */
+.time-slots {
+    margin-bottom: 30px;
+}
+
+.time-slot {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border-left: 4px solid #4CAF50;
+}
+
+.time-slot-header {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.time-slot-reservations {
+    display: grid;
+    gap: 10px;
+}
+
+.reservation-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 15px;
+    align-items: center;
+}
+
+.reservation-tables {
+    font-size: 24px;
+    font-weight: bold;
+    color: #4CAF50;
+    min-width: 60px;
+    text-align: center;
+}
+
+.reservation-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.reservation-name {
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+}
+
+.reservation-details {
+    font-size: 14px;
+    color: #666;
+}
+
+.reservation-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.btn-edit {
+    background: #2196F3;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #1976D2;
+}
+
+.btn-delete {
+    background: #f44336;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #d32f2f;
+}
+
+/* 예약 테이블 */
+.reservation-list {
+    margin-top: 30px;
+}
+
+.reservation-list h3 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.reservation-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.reservation-table th {
+    background: #4CAF50;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.reservation-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.reservation-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.no-data {
+    text-align: center !important;
+    color: #999;
+    padding: 30px !important;
+}
+
+/* 알림 */
+#alert-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.alert.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* 알림 (notification) */
+.notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 16px;
+    z-index: 10000;
+    animation: slideDown 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateX(-50%) translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+.notification.success {
+    background: #4CAF50;
+    color: white;
+}
+
+.notification.error {
+    background: #f44336;
+    color: white;
+}
+
+/* 로딩 오버레이 */
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9998;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #4CAF50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-overlay p {
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+/* 모달 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    color: #333;
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 30px;
+    cursor: pointer;
+    color: #999;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    background: #f8f9fa;
+    color: #333;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .container {
+        padding: 0;
+    }
+
+    .form-container, .status-container {
+        border-radius: 10px;
+    }
+
+    .table-layout {
+        grid-template-columns: repeat(8, 1fr);
+        gap: 4px;
+    }
+
+    .table-item {
+        font-size: 12px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .reservation-card {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .reservation-actions {
+        justify-content: flex-end;
+    }
+
+    .reservation-table {
+        font-size: 14px;
+    }
+
+    .reservation-table th,
+    .reservation-table td {
+        padding: 8px 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 5px;
+    }
+
+    .header h1 {
+        font-size: 1.5em;
+    }
+
+    .number-btn {
+        width: 50px;
+        height: 48px;
+        font-size: 20px;
+    }
+
+    .preference-option {
+        padding: 12px 5px;
+        font-size: 12px;
+    }
+
+    .preference-option .emoji {
+        font-size: 24px;
+    }
+}

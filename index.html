@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>양은이네 예약 시스템</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="header">
+            <h1>🍖 양은이네 예약 시스템</h1>
+            <p>간편한 테이블 예약 관리</p>
+        </div>
+
+        <!-- 상태 바 -->
+        <div class="status-bar">
+            <div class="connection-status" id="connectionStatus">🟢 연결됨</div>
+            <button class="sound-btn" id="soundBtn" onclick="toggleSound()">
+                <span id="soundIcon">🔊</span>
+            </button>
+        </div>
+
+        <!-- 탭 -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('reservation')">예약하기</button>
+            <button class="tab" onclick="showTab('status')">예약현황</button>
+        </div>
+
+        <!-- 예약하기 탭 -->
+        <div id="reservation-tab" class="tab-content active">
+            <div class="form-container">
+                <h2>📝 새 예약 등록</h2>
+                <form id="reservationForm" onsubmit="submitReservation(event)">
+                    <!-- 성함 -->
+                    <div class="form-group">
+                        <label for="name">성함 <span class="required">*</span></label>
+                        <input type="text" id="name" required placeholder="예약자 성함을 입력하세요">
+                    </div>
+
+                    <!-- 인원수 -->
+                    <div class="form-group">
+                        <label for="people">인원수 <span class="required">*</span></label>
+                        <div class="number-input">
+                            <button type="button" class="number-btn" onclick="changePeople(-1)">-</button>
+                            <input type="number" id="people" min="1" max="68" value="2" required readonly>
+                            <button type="button" class="number-btn" onclick="changePeople(1)">+</button>
+                        </div>
+                    </div>
+
+                    <!-- 룸여부 (의미없지만 UI 유지) -->
+                    <div class="form-group">
+                        <label>좌석 선호 <span class="optional">(선택사항)</span></label>
+                        <div class="preference-selector">
+                            <div class="preference-option" onclick="selectPreference('none')">
+                                <span class="emoji">🤷</span>
+                                <span>관계없음</span>
+                            </div>
+                            <div class="preference-option" onclick="selectPreference('hall')">
+                                <span class="emoji">🏠</span>
+                                <span>홀</span>
+                            </div>
+                        </div>
+                        <input type="hidden" id="preference" value="none">
+                    </div>
+
+                    <!-- 예약일자 -->
+                    <div class="form-group">
+                        <label for="date">예약일자 <span class="required">*</span></label>
+                        <input type="date" id="date" required>
+                    </div>
+
+                    <!-- 시간 -->
+                    <div class="form-group">
+                        <label for="time">예약시간 <span class="required">*</span></label>
+                        <input type="time" id="time" required step="1800">
+                    </div>
+
+                    <!-- 연락처 -->
+                    <div class="form-group">
+                        <label for="phone">연락처 <span class="optional">(선택사항)</span></label>
+                        <input type="tel" id="phone" placeholder="010-0000-0000">
+                    </div>
+
+                    <!-- 테이블 선택 -->
+                    <div class="form-group">
+                        <label>테이블 선택 <span class="required">*</span></label>
+                        <div class="table-availability-info">
+                            <p>📅 날짜와 시간을 먼저 선택하면 사용 가능한 테이블을 확인할 수 있습니다.</p>
+                        </div>
+                        <div class="table-selection" id="table-selection">
+                            <!-- 테이블 레이아웃이 여기에 생성됩니다 -->
+                        </div>
+                        <input type="hidden" id="selectedTables" required>
+                    </div>
+
+                    <!-- 제출 버튼 -->
+                    <button type="submit" class="submit-btn">
+                        <span>✨ 예약하기</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 예약현황 탭 -->
+        <div id="status-tab" class="tab-content">
+            <div class="status-container">
+                <div class="status-header">
+                    <h2>📊 예약현황</h2>
+                    <div class="date-selector">
+                        <input type="date" id="statusDate" onchange="updateStatus()">
+                    </div>
+                </div>
+
+                <!-- 통계 카드 -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">총 예약</div>
+                        <div class="stat-value" id="totalReservations">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">총 인원</div>
+                        <div class="stat-value" id="totalPeople">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">사용 테이블</div>
+                        <div class="stat-value" id="usedTables">0/17</div>
+                    </div>
+                </div>
+
+                <!-- 시간대별 예약 현황 -->
+                <div class="time-slots" id="timeSlots">
+                    <!-- 시간대별 예약이 여기에 표시됩니다 -->
+                </div>
+
+                <!-- 예약 목록 테이블 -->
+                <div class="reservation-list">
+                    <h3>📋 예약 목록</h3>
+                    <div class="table-responsive">
+                        <table class="reservation-table" id="reservationTable">
+                            <thead>
+                                <tr>
+                                    <th>시간</th>
+                                    <th>성함</th>
+                                    <th>인원</th>
+                                    <th>테이블</th>
+                                    <th>연락처</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservationTableBody">
+                                <tr>
+                                    <td colspan="6" class="no-data">예약이 없습니다.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 알림 컨테이너 -->
+    <div id="alert-container"></div>
+
+    <!-- 로딩 오버레이 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>처리 중...</p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
