@@ -77,7 +77,6 @@ function initializeTableLayout() {
     
     const tableLayout = document.createElement('div');
     tableLayout.className = 'table-layout';
-    tableLayout.style.gridTemplateColumns = 'repeat(10, 1fr)';
     
     layout.forEach(row => {
         row.forEach(tableNum => {
@@ -678,7 +677,6 @@ function initializeEditTableLayout(selectedTableIds, reservationId) {
     
     const tableLayout = document.createElement('div');
     tableLayout.className = 'table-layout';
-    tableLayout.style.gridTemplateColumns = 'repeat(10, 1fr)';
     
     layout.forEach(row => {
         row.forEach(tableNum => {
