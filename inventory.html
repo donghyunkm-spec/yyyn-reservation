@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>양은이네 재고관리 시스템</title>
+    <link rel="stylesheet" href="inventory.css">
+</head>
+<body>
+    <!-- 로그인 화면 -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <h1>🍖 양은이네 재고관리</h1>
+            <p>비밀번호를 입력하세요</p>
+            <input type="password" id="loginPassword" placeholder="비밀번호" onkeypress="if(event.key==='Enter') login()">
+            <button onclick="login()" class="login-btn">로그인</button>
+        </div>
+    </div>
+
+    <!-- 메인 화면 -->
+    <div id="mainScreen" class="container" style="display: none;">
+        <!-- 헤더 -->
+        <div class="header">
+            <h1>📦 양은이네 재고관리</h1>
+            <p>식자재 재고 및 자동발주 시스템</p>
+            <a href="index.html" class="back-btn">← 예약시스템으로</a>
+        </div>
+
+        <!-- 상태 바 -->
+        <div class="status-bar">
+            <div class="connection-status" id="connectionStatus">🟢 연결됨</div>
+            <button class="logout-btn" onclick="logout()">로그아웃</button>
+        </div>
+
+        <!-- 탭 메뉴 -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('inventory')">재고입력</button>
+            <button class="tab" onclick="showTab('standard')">적정재고설정</button>
+            <button class="tab" onclick="showTab('holidays')">업체휴일관리</button>
+            <button class="tab" onclick="showTab('history')">발주내역</button>
+        </div>
+
+        <!-- 재고입력 탭 -->
+        <div id="inventory-tab" class="tab-content active">
+            <div class="form-container">
+                <h2>📝 재고 입력</h2>
+                
+                <!-- 업체 선택 -->
+                <div class="vendor-selector">
+                    <button class="vendor-btn active" data-vendor="삼시세끼" onclick="selectVendor('삼시세끼')">삼시세끼</button>
+                    <button class="vendor-btn" data-vendor="SPC" onclick="selectVendor('SPC')">SPC</button>
+                    <button class="vendor-btn" data-vendor="기타" onclick="selectVendor('기타')">기타</button>
+                </div>
+
+                <!-- 재고 입력 폼 -->
+                <div id="inventoryForm" class="inventory-form">
+                    <!-- 동적으로 생성됨 -->
+                </div>
+
+                <div class="form-actions">
+                    <button onclick="saveInventory()" class="submit-btn">💾 저장 및 발주 확인</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 적정재고설정 탭 -->
+        <div id="standard-tab" class="tab-content">
+            <div class="form-container">
+                <h2>⚙️ 적정 재고 설정</h2>
+                
+                <!-- 업체 선택 -->
+                <div class="vendor-selector">
+                    <button class="vendor-btn active" data-vendor="삼시세끼" onclick="selectStandardVendor('삼시세끼')">삼시세끼</button>
+                    <button class="vendor-btn" data-vendor="SPC" onclick="selectStandardVendor('SPC')">SPC</button>
+                    <button class="vendor-btn" data-vendor="기타" onclick="selectStandardVendor('기타')">기타</button>
+                </div>
+
+                <!-- 적정재고 설정 폼 -->
+                <div id="standardForm" class="inventory-form">
+                    <!-- 동적으로 생성됨 -->
+                </div>
+
+                <div class="form-actions">
+                    <button onclick="saveStandard()" class="submit-btn">💾 저장</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 업체휴일관리 탭 -->
+        <div id="holidays-tab" class="tab-content">
+            <div class="form-container">
+                <h2>🗓️ 업체 휴일 관리</h2>
+                
+                <div class="holiday-info">
+                    <p><strong>삼시세끼:</strong> 매주 일요일 기본 휴무</p>
+                    <p>추석, 설날 등 긴급 휴일을 추가하세요</p>
+                </div>
+
+                <div class="form-group">
+                    <label>휴일 추가</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="date" id="holidayDate" style="flex: 1;">
+                        <button onclick="addHoliday()" class="btn-primary">추가</button>
+                    </div>
+                </div>
+
+                <div class="holiday-list" id="holidayList">
+                    <!-- 동적으로 생성됨 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 발주내역 탭 -->
+        <div id="history-tab" class="tab-content">
+            <div class="form-container">
+                <h2>📊 발주 내역</h2>
+                
+                <div class="filter-group">
+                    <select id="periodFilter" onchange="loadOrderHistory()">
+                        <option value="7">최근 7일</option>
+                        <option value="30">최근 30일</option>
+                        <option value="90">최근 90일</option>
+                    </select>
+                    <select id="vendorFilter" onchange="loadOrderHistory()">
+                        <option value="all">전체 업체</option>
+                        <option value="삼시세끼">삼시세끼</option>
+                        <option value="SPC">SPC</option>
+                        <option value="기타">기타</option>
+                    </select>
+                </div>
+
+                <div id="historyList" class="history-list">
+                    <!-- 동적으로 생성됨 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 발주 확인 모달 -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚠️ 발주 확인 필요</h2>
+                <button class="close-btn" onclick="closeConfirmModal()">×</button>
+            </div>
+            <div id="confirmContent" class="confirm-content">
+                <!-- 동적으로 생성됨 -->
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeConfirmModal()" class="btn-secondary">돌아가기</button>
+                <button onclick="proceedToOrder()" class="btn-primary">다음 단계</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 발주서 모달 -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 최종 발주 리스트</h2>
+                <button class="close-btn" onclick="closeOrderModal()">×</button>
+            </div>
+            <div id="orderContent" class="order-content">
+                <!-- 동적으로 생성됨 -->
+            </div>
+            <div class="modal-footer">
+                <button onclick="copyToKakao()" class="btn-kakao">💬 카카오톡 복사</button>
+                <button onclick="closeOrderModal()" class="btn-primary">완료</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 알림 컨테이너 -->
+    <div id="alertContainer"></div>
+
+    <script src="inventory.js"></script>
+</body>
+</html>

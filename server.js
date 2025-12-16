@@ -10,12 +10,137 @@ const PORT = process.env.PORT || 3000;
 // 데이터 파일 경로 (Railway Volume 사용)
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const RESERVATIONS_FILE = path.join(DATA_DIR, 'reservations.json');
+const INVENTORY_ITEMS_FILE = path.join(DATA_DIR, 'items.json');
+const INVENTORY_CURRENT_FILE = path.join(DATA_DIR, 'inventory.json');
+const INVENTORY_STANDARD_FILE = path.join(DATA_DIR, 'standard.json');
+const INVENTORY_ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
+const INVENTORY_HOLIDAYS_FILE = path.join(DATA_DIR, 'holidays.json');
+const INVENTORY_LAST_ORDERS_FILE = path.join(DATA_DIR, 'last_orders.json');
 
 // 데이터 디렉토리 생성
 if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
     console.log('📁 데이터 디렉토리 생성됨:', DATA_DIR);
 }
+
+// 재고관리 초기 데이터 생성
+function initializeInventoryData() {
+    // 품목 데이터 초기화
+    if (!fs.existsSync(INVENTORY_ITEMS_FILE)) {
+        const initialItems = {
+            '삼시세끼': [
+                { 품목명: '부추', 중요도: '상', 발주단위: '단' },
+                { 품목명: '배추', 중요도: '상', 발주단위: '망' },
+                { 품목명: '무', 중요도: '상', 발주단위: '박스' },
+                { 품목명: '업소용 대파', 중요도: '상', 발주단위: '단' },
+                { 품목명: '오이', 중요도: '상', 발주단위: '개' },
+                { 품목명: '상추', 중요도: '중', 발주단위: '박스' },
+                { 품목명: '양파', 중요도: '중', 발주단위: '망' },
+                { 품목명: '쪽파', 중요도: '중', 발주단위: '단' },
+                { 품목명: '청양고추', 중요도: '하', 발주단위: 'kg' },
+                { 품목명: '당근', 중요도: '하', 발주단위: '박스' },
+                { 품목명: '적채', 중요도: '하', 발주단위: '개' },
+                { 품목명: '호박고구마', 중요도: '하', 발주단위: '박스' },
+                { 품목명: '판두부', 중요도: '상', 발주단위: '판' },
+                { 품목명: '곱슬이 콩나물', 중요도: '상', 발주단위: '박스' },
+                { 품목명: '굴(생굴)', 중요도: '중', 발주단위: 'kg' },
+                { 품목명: '쌀', 중요도: '중', 발주단위: '포대' },
+                { 품목명: '라면사리', 중요도: '하', 발주단위: '박스' },
+                { 품목명: '신라면', 중요도: '하', 발주단위: '박스' },
+                { 품목명: '떡국떡', 중요도: '하', 발주단위: '봉지' },
+                { 품목명: '계란', 중요도: '상', 발주단위: '판' },
+                { 품목명: '계란 지단', 중요도: '하', 발주단위: '개' },
+                { 품목명: '마늘(깐마늘)', 중요도: '상', 발주단위: '봉지' },
+                { 품목명: '다진마늘(냉동)', 중요도: '중', 발주단위: '봉지' },
+                { 품목명: '백설/해표 참기름', 중요도: '하', 발주단위: '통' },
+                { 품목명: '들깨가루(껍질없는)', 중요도: '하', 발주단위: '봉지' },
+                { 품목명: '와사비분', 중요도: '하', 발주단위: '개' },
+                { 품목명: '와사비믹스간장', 중요도: '하', 발주단위: '봉지' },
+                { 품목명: '간장(몽고/말통)', 중요도: '하', 발주단위: '통' },
+                { 품목명: '쌈장(양념)', 중요도: '하', 발주단위: '박스' },
+                { 품목명: '식용유', 중요도: '하', 발주단위: '통' },
+                { 품목명: '굵은소금', 중요도: '하', 발주단위: '포대' },
+                { 품목명: '설탕', 중요도: '하', 발주단위: '개' },
+                { 품목명: '통후추', 중요도: '하', 발주단위: '통' },
+                { 품목명: '월계수잎', 중요도: '하', 발주단위: '통' },
+                { 품목명: '파슬리가루', 중요도: '하', 발주단위: '통' },
+                { 품목명: '쇠고기다시다', 중요도: '하', 발주단위: '봉지' },
+                { 품목명: '재래식된장(트리오)', 중요도: '하', 발주단위: '통' },
+                { 품목명: '중국산 배추김치', 중요도: '중', 발주단위: '박스' },
+                { 품목명: '냉면용 흰김치', 중요도: '중', 발주단위: '팩' },
+                { 품목명: '홀 흰 쌈무', 중요도: '하', 발주단위: '팩' },
+                { 품목명: '스위트콘', 중요도: '중', 발주단위: '박스' },
+                { 품목명: '미역줄기', 중요도: '중', 발주단위: '박스' },
+                { 품목명: '마요네즈', 중요도: '하', 발주단위: '개' },
+                { 품목명: '건포도', 중요도: '하', 발주단위: '개' },
+                { 품목명: '김가루', 중요도: '하', 발주단위: '개' },
+                { 품목명: '볶음참깨', 중요도: '하', 발주단위: '봉지' },
+                { 품목명: '곰표 밀가루', 중요도: '하', 발주단위: '봉지' },
+                { 품목명: '생수 500ml', 중요도: '상', 발주단위: '개' },
+                { 품목명: '물티슈', 중요도: '상', 발주단위: '박스' },
+                { 품목명: '네프킨/냅킨', 중요도: '상', 발주단위: '박스' },
+                { 품목명: '종이컵', 중요도: '상', 발주단위: '박스' },
+                { 품목명: '라텍스장갑', 중요도: '중', 발주단위: '개' },
+                { 품목명: '종량제봉투', 중요도: '하', 발주단위: '묶음' },
+                { 품목명: '목장갑', 중요도: '하', 발주단위: '묶음' },
+                { 품목명: '랩', 중요도: '하', 발주단위: '개' },
+                { 품목명: '파란봉지', 중요도: '하', 발주단위: '묶음' },
+                { 품목명: '핸드타올', 중요도: '하', 발주단위: '박스' },
+                { 품목명: '위생장갑', 중요도: '하', 발주단위: '개' },
+                { 품목명: '롤밧', 중요도: '하', 발주단위: '개' },
+                { 품목명: '분무기', 중요도: '하', 발주단위: '개' },
+                { 품목명: '퐁퐁 펌프통', 중요도: '하', 발주단위: '개' },
+                { 품목명: '세탁세제', 중요도: '하', 발주단위: '통' },
+                { 품목명: '고기만두', 중요도: '하', 발주단위: '봉지' },
+                { 품목명: '김치만두', 중요도: '하', 발주단위: '봉지' }
+            ],
+            'SPC': [
+                { 품목명: '삼겹살(양은이네/20kg/냉동/수입산)', 발주단위: 'kg' },
+                { 품목명: '[6통]동태(양은이네/20kg/냉동/수입산)', 발주단위: 'box' },
+                { 품목명: '손질오징어(양은이네/30미/냉동/수입산)', 발주단위: 'box' },
+                { 품목명: '냉면육수(양은이네/10kg/상온)', 발주단위: 'box' },
+                { 품목명: '덩어리편육(양은이네/300g/냉동/국내산)', 발주단위: 'pak' },
+                { 품목명: '돌돌김치다대기(양은이네/10kg/냉장/국내산)', 발주단위: 'box' },
+                { 품목명: '초무침소스(양은이네/10kg/냉장/국내산)', 발주단위: 'box' },
+                { 품목명: '춘천막국수(양은이네/20kg/냉동/국내산)', 발주단위: 'box' },
+                { 품목명: '동태탕시즈닝(양은이네/10kg/상온/국내산)', 발주단위: 'box' },
+                { 품목명: '명태곤이(양은이네/22.5kg/냉동/수입산)', 발주단위: 'box' },
+                { 품목명: '명란(양은이네/22.5kg/냉동/수입산)', 발주단위: 'box' },
+                { 품목명: '보쌈무생채(양은이네/10kg/냉동/국내산)', 발주단위: 'box' },
+                { 품목명: '어리굴젓(양은이네/8kg/냉동/국내산)', 발주단위: 'box' },
+                { 품목명: '불냉면소스(양은이네/10kg/냉장/국내산)', 발주단위: 'box' },
+                { 품목명: '명태회무침(양은이네/10kg/냉장/국내산)', 발주단위: 'box' },
+                { 품목명: '무생채양념소스(양은이네/10kg/냉장/국내산)', 발주단위: 'box' }
+            ],
+            '기타': [
+                { 품목명: '굴', 발주단위: 'kg' },
+                { 품목명: '도시락용기', 발주단위: '개' }
+            ]
+        };
+        
+        fs.writeFileSync(INVENTORY_ITEMS_FILE, JSON.stringify(initialItems, null, 2), 'utf8');
+        console.log('✅ 재고관리 품목 데이터 초기화 완료');
+    }
+    
+    // 빈 파일들 생성
+    if (!fs.existsSync(INVENTORY_CURRENT_FILE)) {
+        fs.writeFileSync(INVENTORY_CURRENT_FILE, JSON.stringify({}, null, 2), 'utf8');
+    }
+    if (!fs.existsSync(INVENTORY_STANDARD_FILE)) {
+        fs.writeFileSync(INVENTORY_STANDARD_FILE, JSON.stringify({}, null, 2), 'utf8');
+    }
+    if (!fs.existsSync(INVENTORY_ORDERS_FILE)) {
+        fs.writeFileSync(INVENTORY_ORDERS_FILE, JSON.stringify([], null, 2), 'utf8');
+    }
+    if (!fs.existsSync(INVENTORY_HOLIDAYS_FILE)) {
+        fs.writeFileSync(INVENTORY_HOLIDAYS_FILE, JSON.stringify([], null, 2), 'utf8');
+    }
+    if (!fs.existsSync(INVENTORY_LAST_ORDERS_FILE)) {
+        fs.writeFileSync(INVENTORY_LAST_ORDERS_FILE, JSON.stringify({}, null, 2), 'utf8');
+    }
+}
+
+initializeInventoryData();
 
 // 미들웨어
 app.use(cors());
@@ -324,6 +449,184 @@ app.patch('/api/reservations/:id/status', async (req, res) => {
             success: false, 
             error: '상태 변경 중 오류가 발생했습니다.' 
         });
+    }
+});
+
+// ========================================
+// 재고관리 API
+// ========================================
+
+// 품목 정보 조회
+app.get('/api/inventory/items', (req, res) => {
+    try {
+        const data = fs.readFileSync(INVENTORY_ITEMS_FILE, 'utf8');
+        const items = JSON.parse(data);
+        res.json({ success: true, items });
+    } catch (error) {
+        console.error('품목 조회 오류:', error);
+        res.status(500).json({ success: false, error: '품목 조회 실패' });
+    }
+});
+
+// 현재 재고 조회
+app.get('/api/inventory/current', (req, res) => {
+    try {
+        const data = fs.readFileSync(INVENTORY_CURRENT_FILE, 'utf8');
+        const inventory = JSON.parse(data);
+        res.json({ success: true, inventory });
+    } catch (error) {
+        console.error('재고 조회 오류:', error);
+        res.status(500).json({ success: false, error: '재고 조회 실패' });
+    }
+});
+
+// 현재 재고 저장
+app.post('/api/inventory/current', (req, res) => {
+    try {
+        const { inventory } = req.body;
+        fs.writeFileSync(INVENTORY_CURRENT_FILE, JSON.stringify(inventory, null, 2), 'utf8');
+        res.json({ success: true });
+    } catch (error) {
+        console.error('재고 저장 오류:', error);
+        res.status(500).json({ success: false, error: '재고 저장 실패' });
+    }
+});
+
+// 적정 재고 조회
+app.get('/api/inventory/standard', (req, res) => {
+    try {
+        const data = fs.readFileSync(INVENTORY_STANDARD_FILE, 'utf8');
+        const standard = JSON.parse(data);
+        res.json({ success: true, standard });
+    } catch (error) {
+        console.error('적정 재고 조회 오류:', error);
+        res.status(500).json({ success: false, error: '적정 재고 조회 실패' });
+    }
+});
+
+// 적정 재고 저장
+app.post('/api/inventory/standard', (req, res) => {
+    try {
+        const { standard } = req.body;
+        fs.writeFileSync(INVENTORY_STANDARD_FILE, JSON.stringify(standard, null, 2), 'utf8');
+        res.json({ success: true });
+    } catch (error) {
+        console.error('적정 재고 저장 오류:', error);
+        res.status(500).json({ success: false, error: '적정 재고 저장 실패' });
+    }
+});
+
+// 마지막 발주일 조회
+app.get('/api/inventory/last-orders', (req, res) => {
+    try {
+        const data = fs.readFileSync(INVENTORY_LAST_ORDERS_FILE, 'utf8');
+        const lastOrders = JSON.parse(data);
+        res.json({ success: true, lastOrders });
+    } catch (error) {
+        console.error('마지막 발주일 조회 오류:', error);
+        res.status(500).json({ success: false, error: '마지막 발주일 조회 실패' });
+    }
+});
+
+// 발주 저장
+app.post('/api/inventory/orders', (req, res) => {
+    try {
+        const orderRecord = req.body;
+        
+        // 기존 발주 내역 로드
+        let orders = [];
+        if (fs.existsSync(INVENTORY_ORDERS_FILE)) {
+            const data = fs.readFileSync(INVENTORY_ORDERS_FILE, 'utf8');
+            orders = JSON.parse(data);
+        }
+        
+        // 새 발주 추가
+        orders.push(orderRecord);
+        fs.writeFileSync(INVENTORY_ORDERS_FILE, JSON.stringify(orders, null, 2), 'utf8');
+        
+        // 마지막 발주일 업데이트
+        let lastOrders = {};
+        if (fs.existsSync(INVENTORY_LAST_ORDERS_FILE)) {
+            const data = fs.readFileSync(INVENTORY_LAST_ORDERS_FILE, 'utf8');
+            lastOrders = JSON.parse(data);
+        }
+        
+        const today = orderRecord.date;
+        for (const vendor in orderRecord.orders) {
+            orderRecord.orders[vendor].forEach(item => {
+                const itemKey = `${vendor}_${item.품목명}`;
+                lastOrders[itemKey] = today;
+            });
+        }
+        
+        fs.writeFileSync(INVENTORY_LAST_ORDERS_FILE, JSON.stringify(lastOrders, null, 2), 'utf8');
+        
+        console.log(`📦 발주 저장: ${orderRecord.date}`);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('발주 저장 오류:', error);
+        res.status(500).json({ success: false, error: '발주 저장 실패' });
+    }
+});
+
+// 발주 내역 조회
+app.get('/api/inventory/orders', (req, res) => {
+    try {
+        const { period = 30, vendor = 'all' } = req.query;
+        
+        const data = fs.readFileSync(INVENTORY_ORDERS_FILE, 'utf8');
+        let orders = JSON.parse(data);
+        
+        // 기간 필터링
+        const periodDays = parseInt(period);
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - periodDays);
+        const cutoffStr = cutoffDate.toISOString().split('T')[0];
+        
+        orders = orders.filter(order => order.date >= cutoffStr);
+        
+        // 업체 필터링
+        if (vendor !== 'all') {
+            orders = orders.map(order => ({
+                ...order,
+                orders: { [vendor]: order.orders[vendor] || [] }
+            })).filter(order => order.orders[vendor] && order.orders[vendor].length > 0);
+        }
+        
+        // 최신순 정렬
+        orders.sort((a, b) => {
+            if (a.date !== b.date) return b.date.localeCompare(a.date);
+            return b.time.localeCompare(a.time);
+        });
+        
+        res.json({ success: true, orders });
+    } catch (error) {
+        console.error('발주 내역 조회 오류:', error);
+        res.status(500).json({ success: false, error: '발주 내역 조회 실패' });
+    }
+});
+
+// 휴일 조회
+app.get('/api/inventory/holidays', (req, res) => {
+    try {
+        const data = fs.readFileSync(INVENTORY_HOLIDAYS_FILE, 'utf8');
+        const holidays = JSON.parse(data);
+        res.json({ success: true, holidays });
+    } catch (error) {
+        console.error('휴일 조회 오류:', error);
+        res.status(500).json({ success: false, error: '휴일 조회 실패' });
+    }
+});
+
+// 휴일 저장
+app.post('/api/inventory/holidays', (req, res) => {
+    try {
+        const { holidays } = req.body;
+        fs.writeFileSync(INVENTORY_HOLIDAYS_FILE, JSON.stringify(holidays, null, 2), 'utf8');
+        res.json({ success: true });
+    } catch (error) {
+        console.error('휴일 저장 오류:', error);
+        res.status(500).json({ success: false, error: '휴일 저장 실패' });
     }
 });
 
