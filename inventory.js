@@ -279,46 +279,48 @@ async function saveInventory() {
     }
 }
 
-// 다음 배송일까지 필요한 일수 계산
+// ✅ 개선된 함수: 다음 배송일까지 필요한 일수 계산
 function getDaysUntilNextDelivery(vendor) {
     const today = new Date();
-    const dayOfWeek = today.getDay(); // 0=일, 1=월, ..., 6=토
-    
-    let daysCount = 1; // 최소 1일 (오늘 발주 → 내일 배송)
+    let daysCount = 0;
     let checkDate = new Date(today);
-    checkDate.setDate(checkDate.getDate() + 1); // 내일부터 체크
+    checkDate.setDate(checkDate.getDate() + 1); // 내일(배송일)부터 체크
     
     // 최대 7일까지만 체크 (무한루프 방지)
     for (let i = 0; i < 7; i++) {
         const dateStr = checkDate.toISOString().split('T')[0];
         const dow = checkDate.getDay();
         
-        // 일요일 체크 (삼시세끼, SPC)
-        if ((vendor === '삼시세끼' || vendor === 'SPC') && dow === 0) {
-            daysCount++;
+        // 가게 휴무 체크 (가게 쉬면 소비 없음!)
+        const isStoreHoliday = holidays['store'] && holidays['store'].includes(dateStr);
+        
+        // 업체 휴무 체크
+        const isSundayForVendor = (vendor === '삼시세끼' || vendor === 'SPC') && dow === 0;
+        const isVendorHoliday = holidays[vendor] && holidays[vendor].includes(dateStr);
+        
+        // 업체가 휴무인 경우
+        if (isSundayForVendor || isVendorHoliday) {
+            // 가게가 영업하면 재고가 필요하므로 일수 추가
+            if (!isStoreHoliday) {
+                daysCount++;
+            }
+            // 다음 날 체크 계속
             checkDate.setDate(checkDate.getDate() + 1);
             continue;
         }
         
-        // 업체 휴일 체크
-        if (holidays[vendor] && holidays[vendor].includes(dateStr)) {
+        // 업체가 영업하는 날 (배송 가능일)
+        // 가게가 영업하면 일수 추가
+        if (!isStoreHoliday) {
             daysCount++;
-            checkDate.setDate(checkDate.getDate() + 1);
-            continue;
         }
         
-        // 가게 휴일 체크
-        if (holidays['store'] && holidays['store'].includes(dateStr)) {
-            daysCount++;
-            checkDate.setDate(checkDate.getDate() + 1);
-            continue;
-        }
-        
-        // 배송 가능일 도달
+        // 배송 가능일 도달 -> 종료
         break;
     }
     
-    return daysCount;
+    // 최소 1일 보장 (혹시 모를 경우 대비)
+    return Math.max(1, daysCount);
 }
 
 // 발주 확인 프로세스
