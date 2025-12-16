@@ -1,4 +1,4 @@
-/* 재고관리 시스템 스타일 (개선 버전) */
+/* 재고관리 시스템 스타일 (최종 버전) */
 * {
     margin: 0;
     padding: 0;
@@ -301,19 +301,7 @@ body {
     scroll-margin-top: 80px;
 }
 
-.vendor-section-header {
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-    color: white;
-    padding: 15px 20px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    font-size: 1.3em;
-    font-weight: bold;
-    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
-    position: sticky;
-    top: 80px;
-    z-index: 50;
-}
+/* ✅ 업체 헤더 제거됨 */
 
 /* 재고 입력 폼 */
 .inventory-form {
@@ -323,8 +311,8 @@ body {
 }
 
 .item-group {
-    margin-bottom: 15px;
-    padding: 12px;
+    margin-bottom: 12px;
+    padding: 10px;
     background: #f8f9fa;
     border-radius: 8px;
     border-left: 4px solid #4CAF50;
@@ -339,7 +327,7 @@ body {
 
 .item-name {
     font-weight: bold;
-    font-size: 15px;
+    font-size: 14px;
     color: #333;
     flex: 1;
 }
@@ -366,33 +354,35 @@ body {
     color: #2e7d32;
 }
 
-/* ✅ 개선: 1줄 배치 */
+/* ✅ 개선: 1줄 배치 - 크기 축소 */
 .item-inputs-inline {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 8px;
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
 }
 
 .input-inline {
+    flex: 1;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
 }
 
 .input-inline label {
-    font-size: 12px;
+    font-size: 11px;
     color: #666;
-    min-width: 60px;
+    min-width: 50px;
+    white-space: nowrap;
 }
 
 .input-inline input {
     flex: 1;
-    padding: 8px;
+    padding: 6px 4px;
     border: 2px solid #ddd;
     border-radius: 5px;
     font-size: 14px;
     text-align: center;
+    min-width: 0;
 }
 
 .input-inline input:focus {
@@ -401,9 +391,9 @@ body {
 }
 
 .input-inline .unit-text {
-    font-size: 12px;
+    font-size: 11px;
     color: #999;
-    min-width: 40px;
+    min-width: 30px;
 }
 
 /* 폼 액션 */
@@ -630,7 +620,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* ✅ 개선: 발주확인 - 배송 정보 박스 */
+/* 배송 정보 박스 */
 .delivery-info-box {
     background: #e3f2fd;
     padding: 15px;
@@ -651,7 +641,7 @@ body {
     margin: 5px 0;
 }
 
-/* ✅ 개선: 발주확인 - 테이블 형태 */
+/* ✅ 개선: 발주확인 - 테이블 테두리 강조 */
 .confirm-table-wrapper {
     overflow-x: auto;
     margin-bottom: 20px;
@@ -661,6 +651,7 @@ body {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
+    border: 2px solid #000;
 }
 
 .confirm-table thead {
@@ -671,26 +662,17 @@ body {
     padding: 12px 8px;
     text-align: left;
     font-weight: bold;
-    border-bottom: 2px solid #ddd;
+    border: 1px solid #000;
     color: #333;
 }
 
 .confirm-table td {
     padding: 10px 8px;
-    border-bottom: 1px solid #eee;
+    border: 1px solid #000;
 }
 
 .confirm-table tbody tr:hover {
     background: #f8f9fa;
-}
-
-.vendor-table-header {
-    background: #4CAF50;
-    color: white;
-    padding: 10px;
-    font-weight: bold;
-    margin-top: 15px;
-    border-radius: 5px;
 }
 
 .order-content {
