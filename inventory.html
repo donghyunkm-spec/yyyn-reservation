@@ -35,9 +35,10 @@
         <!-- 탭 메뉴 -->
         <div class="tabs">
             <button class="tab active" onclick="showTab('inventory')">재고입력</button>
-            <button class="tab" onclick="showTab('standard')">적정재고설정</button>
-            <button class="tab" onclick="showTab('holidays')">업체휴일관리</button>
-            <button class="tab" onclick="showTab('history')">발주내역</button>
+            <button class="tab" onclick="showTab('standard')">하루사용량</button>
+            <button class="tab" onclick="showTab('holidays')">휴일관리</button>
+            <button class="tab" onclick="showTab('inventoryHistory')">재고내역</button>
+            <button class="tab" onclick="showTab('orderHistory')">발주내역</button>
         </div>
 
         <!-- 재고입력 탭 -->
@@ -63,11 +64,16 @@
             </div>
         </div>
 
-        <!-- 적정재고설정 탭 -->
+        <!-- 하루사용량 설정 탭 -->
         <div id="standard-tab" class="tab-content">
             <div class="form-container">
-                <h2>⚙️ 적정 재고 설정</h2>
+                <h2>⚙️ 하루 사용량 설정</h2>
                 
+                <div class="info-box">
+                    <p>💡 <strong>하루 사용량</strong>을 정확히 설정하면 자동으로 필요한 일수만큼 발주량이 계산됩니다.</p>
+                    <p>예) 무 하루사용량 0.3박스, 3일치 필요 → 0.9박스 발주</p>
+                </div>
+
                 <!-- 업체 선택 -->
                 <div class="vendor-selector">
                     <button class="vendor-btn active" data-vendor="삼시세끼" onclick="selectStandardVendor('삼시세끼')">삼시세끼</button>
@@ -75,7 +81,7 @@
                     <button class="vendor-btn" data-vendor="기타" onclick="selectStandardVendor('기타')">기타</button>
                 </div>
 
-                <!-- 적정재고 설정 폼 -->
+                <!-- 하루사용량 설정 폼 -->
                 <div id="standardForm" class="inventory-form">
                     <!-- 동적으로 생성됨 -->
                 </div>
@@ -86,42 +92,92 @@
             </div>
         </div>
 
-        <!-- 업체휴일관리 탭 -->
+        <!-- 휴일관리 탭 -->
         <div id="holidays-tab" class="tab-content">
             <div class="form-container">
-                <h2>🗓️ 업체 휴일 관리</h2>
+                <h2>🗓️ 휴일 관리</h2>
                 
-                <div class="holiday-info">
-                    <p><strong>삼시세끼:</strong> 매주 일요일 기본 휴무</p>
-                    <p>추석, 설날 등 긴급 휴일을 추가하세요</p>
-                </div>
-
-                <div class="form-group">
-                    <label>휴일 추가</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="date" id="holidayDate" style="flex: 1;">
-                        <button onclick="addHoliday()" class="btn-primary">추가</button>
+                <!-- 업체별 휴일 관리 -->
+                <div class="holiday-section">
+                    <h3>🏢 우리 가게 휴일</h3>
+                    <div class="holiday-info">
+                        <p>추석, 설날 등 가게 휴무일을 등록하세요</p>
+                    </div>
+                    <div class="form-group">
+                        <div style="display: flex; gap: 10px;">
+                            <input type="date" id="storeHolidayDate" style="flex: 1;">
+                            <button onclick="addHoliday('store')" class="btn-primary">추가</button>
+                        </div>
+                    </div>
+                    <div class="holiday-list" id="storeHolidayList">
+                        <!-- 동적으로 생성됨 -->
                     </div>
                 </div>
 
-                <div class="holiday-list" id="holidayList">
-                    <!-- 동적으로 생성됨 -->
+                <div class="holiday-section">
+                    <h3>🚚 삼시세끼 휴일</h3>
+                    <div class="holiday-info">
+                        <p>기본: 매주 일요일 휴무 (자동 적용)</p>
+                        <p>추가 휴일을 등록하세요</p>
+                    </div>
+                    <div class="form-group">
+                        <div style="display: flex; gap: 10px;">
+                            <input type="date" id="samsiHolidayDate" style="flex: 1;">
+                            <button onclick="addHoliday('삼시세끼')" class="btn-primary">추가</button>
+                        </div>
+                    </div>
+                    <div class="holiday-list" id="samsiHolidayList">
+                        <!-- 동적으로 생성됨 -->
+                    </div>
+                </div>
+
+                <div class="holiday-section">
+                    <h3>🍞 SPC 휴일</h3>
+                    <div class="holiday-info">
+                        <p>기본: 매주 일요일 휴무 (자동 적용)</p>
+                        <p>추가 휴일을 등록하세요</p>
+                    </div>
+                    <div class="form-group">
+                        <div style="display: flex; gap: 10px;">
+                            <input type="date" id="spcHolidayDate" style="flex: 1;">
+                            <button onclick="addHoliday('SPC')" class="btn-primary">추가</button>
+                        </div>
+                    </div>
+                    <div class="holiday-list" id="spcHolidayList">
+                        <!-- 동적으로 생성됨 -->
+                    </div>
+                </div>
+
+                <div class="holiday-section">
+                    <h3>🦪 기타업체 휴일</h3>
+                    <div class="holiday-info">
+                        <p>굴 업체 등 기타 업체 휴일을 등록하세요</p>
+                    </div>
+                    <div class="form-group">
+                        <div style="display: flex; gap: 10px;">
+                            <input type="date" id="etcHolidayDate" style="flex: 1;">
+                            <button onclick="addHoliday('기타')" class="btn-primary">추가</button>
+                        </div>
+                    </div>
+                    <div class="holiday-list" id="etcHolidayList">
+                        <!-- 동적으로 생성됨 -->
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- 발주내역 탭 -->
-        <div id="history-tab" class="tab-content">
+        <!-- 재고내역 탭 -->
+        <div id="inventoryHistory-tab" class="tab-content">
             <div class="form-container">
-                <h2>📊 발주 내역</h2>
+                <h2>📊 재고 내역</h2>
                 
                 <div class="filter-group">
-                    <select id="periodFilter" onchange="loadOrderHistory()">
+                    <select id="invHistoryPeriod" onchange="loadInventoryHistory()">
                         <option value="7">최근 7일</option>
-                        <option value="30">최근 30일</option>
+                        <option value="30" selected>최근 30일</option>
                         <option value="90">최근 90일</option>
                     </select>
-                    <select id="vendorFilter" onchange="loadOrderHistory()">
+                    <select id="invHistoryVendor" onchange="loadInventoryHistory()">
                         <option value="all">전체 업체</option>
                         <option value="삼시세끼">삼시세끼</option>
                         <option value="SPC">SPC</option>
@@ -129,7 +185,32 @@
                     </select>
                 </div>
 
-                <div id="historyList" class="history-list">
+                <div id="inventoryHistoryList" class="history-list">
+                    <!-- 동적으로 생성됨 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 발주내역 탭 -->
+        <div id="orderHistory-tab" class="tab-content">
+            <div class="form-container">
+                <h2>📋 발주 내역</h2>
+                
+                <div class="filter-group">
+                    <select id="orderPeriodFilter" onchange="loadOrderHistory()">
+                        <option value="7">최근 7일</option>
+                        <option value="30" selected>최근 30일</option>
+                        <option value="90">최근 90일</option>
+                    </select>
+                    <select id="orderVendorFilter" onchange="loadOrderHistory()">
+                        <option value="all">전체 업체</option>
+                        <option value="삼시세끼">삼시세끼</option>
+                        <option value="SPC">SPC</option>
+                        <option value="기타">기타</option>
+                    </select>
+                </div>
+
+                <div id="orderHistoryList" class="history-list">
                     <!-- 동적으로 생성됨 -->
                 </div>
             </div>

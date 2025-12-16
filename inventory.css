@@ -164,11 +164,11 @@ body {
     cursor: pointer;
     background: #f8f9fa;
     border: none;
-    font-size: clamp(13px, 2.5vw, 16px);
+    font-size: clamp(12px, 2.5vw, 15px);
     font-weight: bold;
     transition: all 0.3s ease;
     color: #333;
-    min-width: 100px;
+    min-width: 90px;
 }
 
 .tab:hover {
@@ -201,6 +201,27 @@ body {
     color: #333;
     margin-bottom: 20px;
     font-size: clamp(1.3em, 4vw, 1.8em);
+}
+
+.form-container h3 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: clamp(1.1em, 3vw, 1.4em);
+}
+
+/* 정보 박스 */
+.info-box {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #2196F3;
+}
+
+.info-box p {
+    margin-bottom: 5px;
+    color: #1565c0;
+    font-size: 14px;
 }
 
 /* 업체 선택 버튼 */
@@ -349,17 +370,28 @@ body {
 }
 
 /* 휴일 관리 */
+.holiday-section {
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.holiday-section:last-child {
+    border-bottom: none;
+}
+
 .holiday-info {
     background: #e3f2fd;
     padding: 15px;
     border-radius: 8px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     border-left: 4px solid #2196F3;
 }
 
 .holiday-info p {
     margin-bottom: 5px;
     color: #1565c0;
+    font-size: 14px;
 }
 
 .form-group {
@@ -374,7 +406,7 @@ body {
 }
 
 .holiday-list {
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 .holiday-item {
@@ -421,7 +453,7 @@ body {
     font-size: 16px;
 }
 
-/* 발주 내역 */
+/* 발주/재고 내역 */
 .history-list {
     margin-top: 20px;
 }
@@ -563,6 +595,7 @@ body {
     font-family: monospace;
     font-size: 14px;
     line-height: 1.8;
+    white-space: pre-wrap;
 }
 
 .modal-footer {
@@ -713,5 +746,14 @@ body {
 
     .login-container {
         padding: 30px 20px;
+    }
+    
+    .tabs {
+        font-size: 11px;
+    }
+    
+    .tab {
+        padding: 12px 5px;
+        min-width: 70px;
     }
 }

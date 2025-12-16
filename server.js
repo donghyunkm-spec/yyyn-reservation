@@ -12,10 +12,11 @@ const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const RESERVATIONS_FILE = path.join(DATA_DIR, 'reservations.json');
 const INVENTORY_ITEMS_FILE = path.join(DATA_DIR, 'items.json');
 const INVENTORY_CURRENT_FILE = path.join(DATA_DIR, 'inventory.json');
-const INVENTORY_STANDARD_FILE = path.join(DATA_DIR, 'standard.json');
+const INVENTORY_USAGE_FILE = path.join(DATA_DIR, 'daily_usage.json');
 const INVENTORY_ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
 const INVENTORY_HOLIDAYS_FILE = path.join(DATA_DIR, 'holidays.json');
 const INVENTORY_LAST_ORDERS_FILE = path.join(DATA_DIR, 'last_orders.json');
+const INVENTORY_HISTORY_FILE = path.join(DATA_DIR, 'inventory_history.json');
 
 // 데이터 디렉토리 생성
 if (!fs.existsSync(DATA_DIR)) {
@@ -126,17 +127,27 @@ function initializeInventoryData() {
     if (!fs.existsSync(INVENTORY_CURRENT_FILE)) {
         fs.writeFileSync(INVENTORY_CURRENT_FILE, JSON.stringify({}, null, 2), 'utf8');
     }
-    if (!fs.existsSync(INVENTORY_STANDARD_FILE)) {
-        fs.writeFileSync(INVENTORY_STANDARD_FILE, JSON.stringify({}, null, 2), 'utf8');
+    if (!fs.existsSync(INVENTORY_USAGE_FILE)) {
+        fs.writeFileSync(INVENTORY_USAGE_FILE, JSON.stringify({}, null, 2), 'utf8');
     }
     if (!fs.existsSync(INVENTORY_ORDERS_FILE)) {
         fs.writeFileSync(INVENTORY_ORDERS_FILE, JSON.stringify([], null, 2), 'utf8');
     }
     if (!fs.existsSync(INVENTORY_HOLIDAYS_FILE)) {
-        fs.writeFileSync(INVENTORY_HOLIDAYS_FILE, JSON.stringify([], null, 2), 'utf8');
+        // 업체별 휴일 관리
+        const initialHolidays = {
+            'store': [],
+            '삼시세끼': [],
+            'SPC': [],
+            '기타': []
+        };
+        fs.writeFileSync(INVENTORY_HOLIDAYS_FILE, JSON.stringify(initialHolidays, null, 2), 'utf8');
     }
     if (!fs.existsSync(INVENTORY_LAST_ORDERS_FILE)) {
         fs.writeFileSync(INVENTORY_LAST_ORDERS_FILE, JSON.stringify({}, null, 2), 'utf8');
+    }
+    if (!fs.existsSync(INVENTORY_HISTORY_FILE)) {
+        fs.writeFileSync(INVENTORY_HISTORY_FILE, JSON.stringify([], null, 2), 'utf8');
     }
 }
 
@@ -485,6 +496,39 @@ app.post('/api/inventory/current', (req, res) => {
     try {
         const { inventory } = req.body;
         fs.writeFileSync(INVENTORY_CURRENT_FILE, JSON.stringify(inventory, null, 2), 'utf8');
+        
+        // 재고 히스토리 저장
+        let history = [];
+        if (fs.existsSync(INVENTORY_HISTORY_FILE)) {
+            const data = fs.readFileSync(INVENTORY_HISTORY_FILE, 'utf8');
+            history = JSON.parse(data);
+        }
+        
+        const now = new Date();
+        const historyRecord = {
+            date: now.toISOString().split('T')[0],
+            time: now.toTimeString().split(' ')[0].substring(0, 5),
+            inventory: {}
+        };
+        
+        // 업체별로 재고 분류
+        for (const itemKey in inventory) {
+            const vendor = itemKey.split('_')[0];
+            if (!historyRecord.inventory[vendor]) {
+                historyRecord.inventory[vendor] = {};
+            }
+            historyRecord.inventory[vendor][itemKey] = inventory[itemKey];
+        }
+        
+        history.push(historyRecord);
+        
+        // 최근 100개만 유지
+        if (history.length > 100) {
+            history = history.slice(-100);
+        }
+        
+        fs.writeFileSync(INVENTORY_HISTORY_FILE, JSON.stringify(history, null, 2), 'utf8');
+        
         res.json({ success: true });
     } catch (error) {
         console.error('재고 저장 오류:', error);
@@ -492,27 +536,27 @@ app.post('/api/inventory/current', (req, res) => {
     }
 });
 
-// 적정 재고 조회
-app.get('/api/inventory/standard', (req, res) => {
+// 하루 사용량 조회
+app.get('/api/inventory/daily-usage', (req, res) => {
     try {
-        const data = fs.readFileSync(INVENTORY_STANDARD_FILE, 'utf8');
-        const standard = JSON.parse(data);
-        res.json({ success: true, standard });
+        const data = fs.readFileSync(INVENTORY_USAGE_FILE, 'utf8');
+        const usage = JSON.parse(data);
+        res.json({ success: true, usage });
     } catch (error) {
-        console.error('적정 재고 조회 오류:', error);
-        res.status(500).json({ success: false, error: '적정 재고 조회 실패' });
+        console.error('하루 사용량 조회 오류:', error);
+        res.status(500).json({ success: false, error: '하루 사용량 조회 실패' });
     }
 });
 
-// 적정 재고 저장
-app.post('/api/inventory/standard', (req, res) => {
+// 하루 사용량 저장
+app.post('/api/inventory/daily-usage', (req, res) => {
     try {
-        const { standard } = req.body;
-        fs.writeFileSync(INVENTORY_STANDARD_FILE, JSON.stringify(standard, null, 2), 'utf8');
+        const { usage } = req.body;
+        fs.writeFileSync(INVENTORY_USAGE_FILE, JSON.stringify(usage, null, 2), 'utf8');
         res.json({ success: true });
     } catch (error) {
-        console.error('적정 재고 저장 오류:', error);
-        res.status(500).json({ success: false, error: '적정 재고 저장 실패' });
+        console.error('하루 사용량 저장 오류:', error);
+        res.status(500).json({ success: false, error: '하루 사용량 저장 실패' });
     }
 });
 
@@ -603,6 +647,43 @@ app.get('/api/inventory/orders', (req, res) => {
     } catch (error) {
         console.error('발주 내역 조회 오류:', error);
         res.status(500).json({ success: false, error: '발주 내역 조회 실패' });
+    }
+});
+
+// 재고 내역 조회
+app.get('/api/inventory/history', (req, res) => {
+    try {
+        const { period = 30, vendor = 'all' } = req.query;
+        
+        const data = fs.readFileSync(INVENTORY_HISTORY_FILE, 'utf8');
+        let history = JSON.parse(data);
+        
+        // 기간 필터링
+        const periodDays = parseInt(period);
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - periodDays);
+        const cutoffStr = cutoffDate.toISOString().split('T')[0];
+        
+        history = history.filter(record => record.date >= cutoffStr);
+        
+        // 업체 필터링
+        if (vendor !== 'all') {
+            history = history.map(record => ({
+                ...record,
+                inventory: { [vendor]: record.inventory[vendor] || {} }
+            })).filter(record => record.inventory[vendor] && Object.keys(record.inventory[vendor]).length > 0);
+        }
+        
+        // 최신순 정렬
+        history.sort((a, b) => {
+            if (a.date !== b.date) return b.date.localeCompare(a.date);
+            return b.time.localeCompare(a.time);
+        });
+        
+        res.json({ success: true, history });
+    } catch (error) {
+        console.error('재고 내역 조회 오류:', error);
+        res.status(500).json({ success: false, error: '재고 내역 조회 실패' });
     }
 });
 

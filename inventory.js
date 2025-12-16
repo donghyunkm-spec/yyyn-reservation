@@ -1,17 +1,24 @@
-// 재고관리 시스템 - 프론트엔드 로직
+// 재고관리 시스템 - 프론트엔드 로직 (개선 버전)
 
 // 전역 변수
 let currentVendor = '삼시세끼';
 let currentStandardVendor = '삼시세끼';
 let items = {};
 let inventory = {};
-let standardInventory = {};
-let holidays = [];
-let currentInventoryData = {};
+let dailyUsage = {}; // 하루 사용량 (기존 standardInventory 대체)
+let holidays = {
+    'store': [],
+    '삼시세끼': [],
+    'SPC': [],
+    '기타': []
+};
 let lastOrderDates = {};
 
 const API_BASE = '';
 const PASSWORD = '1234'; // 실제 운영시 변경 필요
+
+// 요일 한글 변환
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
@@ -74,11 +81,11 @@ async function loadData() {
             inventory = inventoryData.inventory;
         }
         
-        // 적정 재고 로드
-        const standardRes = await fetch(`${API_BASE}/api/inventory/standard`);
-        const standardData = await standardRes.json();
-        if (standardData.success) {
-            standardInventory = standardData.standard;
+        // 하루 사용량 로드
+        const usageRes = await fetch(`${API_BASE}/api/inventory/daily-usage`);
+        const usageData = await usageRes.json();
+        if (usageData.success) {
+            dailyUsage = usageData.usage;
         }
         
         // 마지막 발주일 로드
@@ -112,7 +119,9 @@ function showTab(tabName) {
         renderStandardForm();
     } else if (tabName === 'holidays') {
         loadHolidays();
-    } else if (tabName === 'history') {
+    } else if (tabName === 'inventoryHistory') {
+        loadInventoryHistory();
+    } else if (tabName === 'orderHistory') {
         loadOrderHistory();
     }
 }
@@ -127,7 +136,7 @@ function selectVendor(vendor) {
     renderInventoryForm();
 }
 
-// 업체 선택 (적정재고)
+// 업체 선택 (하루사용량)
 function selectStandardVendor(vendor) {
     currentStandardVendor = vendor;
     document.querySelectorAll('#standard-tab .vendor-btn').forEach(btn => {
@@ -153,7 +162,7 @@ function renderInventoryForm() {
     vendorItems.forEach(item => {
         const itemKey = `${currentVendor}_${item.품목명}`;
         const currentStock = inventory[itemKey] || 0;
-        const standardStock = standardInventory[itemKey] || 0;
+        const usage = dailyUsage[itemKey] || 0;
         
         html += `
             <div class="item-group">
@@ -173,9 +182,9 @@ function renderInventoryForm() {
                         <div class="unit-display">${item.발주단위}</div>
                     </div>
                     <div class="input-group">
-                        <label>적정 재고</label>
+                        <label>하루 사용량</label>
                         <input type="text" 
-                               value="${standardStock} ${item.발주단위}" 
+                               value="${usage} ${item.발주단위}" 
                                readonly 
                                style="background: #f8f9fa;">
                     </div>
@@ -187,7 +196,7 @@ function renderInventoryForm() {
     formContainer.innerHTML = html;
 }
 
-// 적정 재고 설정 폼 렌더링
+// 하루 사용량 설정 폼 렌더링
 function renderStandardForm() {
     const formContainer = document.getElementById('standardForm');
     if (!formContainer) return;
@@ -202,7 +211,7 @@ function renderStandardForm() {
     let html = '';
     vendorItems.forEach(item => {
         const itemKey = `${currentStandardVendor}_${item.품목명}`;
-        const standardStock = standardInventory[itemKey] || 0;
+        const usage = dailyUsage[itemKey] || 0;
         
         html += `
             <div class="item-group">
@@ -212,10 +221,10 @@ function renderStandardForm() {
                 </div>
                 <div class="item-inputs">
                     <div class="input-group">
-                        <label>적정 재고량</label>
+                        <label>하루 사용량</label>
                         <input type="number" 
-                               id="standard_${itemKey}" 
-                               value="${standardStock}" 
+                               id="usage_${itemKey}" 
+                               value="${usage}" 
                                min="0" 
                                step="0.1"
                                inputmode="decimal">
@@ -246,7 +255,7 @@ async function saveInventory() {
             });
         }
         
-        // 서버에 저장
+        // 서버에 저장 (재고 + 히스토리)
         const response = await fetch(`${API_BASE}/api/inventory/current`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -270,11 +279,50 @@ async function saveInventory() {
     }
 }
 
+// 다음 배송일까지 필요한 일수 계산
+function getDaysUntilNextDelivery(vendor) {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0=일, 1=월, ..., 6=토
+    
+    let daysCount = 1; // 최소 1일 (오늘 발주 → 내일 배송)
+    let checkDate = new Date(today);
+    checkDate.setDate(checkDate.getDate() + 1); // 내일부터 체크
+    
+    // 최대 7일까지만 체크 (무한루프 방지)
+    for (let i = 0; i < 7; i++) {
+        const dateStr = checkDate.toISOString().split('T')[0];
+        const dow = checkDate.getDay();
+        
+        // 일요일 체크 (삼시세끼, SPC)
+        if ((vendor === '삼시세끼' || vendor === 'SPC') && dow === 0) {
+            daysCount++;
+            checkDate.setDate(checkDate.getDate() + 1);
+            continue;
+        }
+        
+        // 업체 휴일 체크
+        if (holidays[vendor] && holidays[vendor].includes(dateStr)) {
+            daysCount++;
+            checkDate.setDate(checkDate.getDate() + 1);
+            continue;
+        }
+        
+        // 가게 휴일 체크
+        if (holidays['store'] && holidays['store'].includes(dateStr)) {
+            daysCount++;
+            checkDate.setDate(checkDate.getDate() + 1);
+            continue;
+        }
+        
+        // 배송 가능일 도달
+        break;
+    }
+    
+    return daysCount;
+}
+
 // 발주 확인 프로세스
 async function checkOrderConfirmation() {
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0=일요일, 5=금요일
-    
     const confirmItems = {
         '삼시세끼': [],
         'SPC': [],
@@ -284,12 +332,14 @@ async function checkOrderConfirmation() {
     // 각 업체별 확인 필요 품목 체크
     for (const vendor in items) {
         const vendorItems = items[vendor];
+        const daysNeeded = getDaysUntilNextDelivery(vendor);
         
         vendorItems.forEach(item => {
             const itemKey = `${vendor}_${item.품목명}`;
             const currentStock = inventory[itemKey] || 0;
-            const standardStock = standardInventory[itemKey] || 0;
-            const orderAmount = Math.max(0, standardStock - currentStock);
+            const usage = dailyUsage[itemKey] || 0;
+            const neededTotal = usage * daysNeeded;
+            const orderAmount = Math.max(0, neededTotal - currentStock);
             const lastOrderDate = lastOrderDates[itemKey] || '';
             
             // 발주 확인 로직
@@ -326,7 +376,8 @@ async function checkOrderConfirmation() {
                     ...item,
                     itemKey,
                     currentStock,
-                    standardStock,
+                    usage,
+                    daysNeeded,
                     orderAmount,
                     lastOrderDate,
                     reason
@@ -348,8 +399,6 @@ async function checkOrderConfirmation() {
 
 // 발주 확인 모달 표시
 function showConfirmModal(confirmItems) {
-    currentInventoryData = confirmItems;
-    
     const modal = document.getElementById('confirmModal');
     const content = document.getElementById('confirmContent');
     
@@ -370,7 +419,9 @@ function showConfirmModal(confirmItems) {
                         ${item.reason}<br>
                         마지막 발주: ${item.lastOrderDate || '기록 없음'}<br>
                         현재 재고: ${item.currentStock} ${item.발주단위}<br>
-                        권장 발주량: ${item.orderAmount} ${item.발주단위}
+                        하루 사용량: ${item.usage} ${item.발주단위}<br>
+                        필요 일수: ${item.daysNeeded}일<br>
+                        권장 발주량: ${Math.round(item.orderAmount * 10) / 10} ${item.발주단위}
                     </div>
                 `;
             });
@@ -396,9 +447,6 @@ function closeConfirmModal() {
 async function proceedToOrder() {
     closeConfirmModal();
     
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0=일요일, 5=금요일
-    
     // 발주량 계산
     const orderData = {
         '삼시세끼': [],
@@ -408,35 +456,32 @@ async function proceedToOrder() {
     
     for (const vendor in items) {
         const vendorItems = items[vendor];
+        const daysNeeded = getDaysUntilNextDelivery(vendor);
         
         vendorItems.forEach(item => {
             const itemKey = `${vendor}_${item.품목명}`;
             const currentStock = inventory[itemKey] || 0;
-            let standardStock = standardInventory[itemKey] || 0;
+            const usage = dailyUsage[itemKey] || 0;
             
-            // 금요일 발주시 주말 소비량 추가 (삼시세끼만)
-            if (vendor === '삼시세끼' && dayOfWeek === 5) {
-                standardStock = standardStock * 1.5; // 주말 50% 추가
-            }
-            
-            // 업체 휴일 전날 처리 (추후 구현)
-            
-            let orderAmount = Math.max(0, standardStock - currentStock);
+            const neededTotal = usage * daysNeeded;
+            let orderAmount = Math.max(0, neededTotal - currentStock);
             orderAmount = Math.round(orderAmount * 10) / 10; // 소수점 1자리
             
             if (orderAmount > 0) {
                 orderData[vendor].push({
                     ...item,
-                    orderAmount
+                    orderAmount,
+                    daysNeeded
                 });
             }
         });
     }
     
     // 발주 내역 저장
+    const today = new Date();
     const orderRecord = {
         date: today.toISOString().split('T')[0],
-        time: today.toTimeString().split(' ')[0],
+        time: today.toTimeString().split(' ')[0].substring(0, 5),
         orders: orderData
     };
     
@@ -470,16 +515,14 @@ function showOrderModal(orderData) {
         if (items.length > 0) {
             html += `
                 <div class="order-section">
-                    <h3>${vendor}</h3>
-                    <div class="order-items" id="order_${vendor}">
-            `;
+                    <h3>${vendor} (${items[0].daysNeeded}일치)</h3>
+                    <div class="order-items" id="order_${vendor}">`;
             
             items.forEach(item => {
                 html += `${item.품목명} ${item.orderAmount}${item.발주단위}\n`;
             });
             
-            html += `
-                    </div>
+            html += `</div>
                 </div>
             `;
         }
@@ -522,38 +565,38 @@ function copyToKakao() {
     });
 }
 
-// 적정 재고 저장
+// 하루 사용량 저장
 async function saveStandard() {
     try {
-        const newStandard = {};
+        const newUsage = {};
         
         for (const vendor in items) {
             const vendorItems = items[vendor];
             vendorItems.forEach(item => {
                 const itemKey = `${vendor}_${item.품목명}`;
-                const inputElement = document.getElementById(`standard_${itemKey}`);
+                const inputElement = document.getElementById(`usage_${itemKey}`);
                 if (inputElement) {
-                    newStandard[itemKey] = parseFloat(inputElement.value) || 0;
+                    newUsage[itemKey] = parseFloat(inputElement.value) || 0;
                 }
             });
         }
         
-        const response = await fetch(`${API_BASE}/api/inventory/standard`, {
+        const response = await fetch(`${API_BASE}/api/inventory/daily-usage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ standard: newStandard })
+            body: JSON.stringify({ usage: newUsage })
         });
         
         const result = await response.json();
         
         if (result.success) {
-            standardInventory = newStandard;
-            showAlert('적정 재고가 저장되었습니다.', 'success');
+            dailyUsage = newUsage;
+            showAlert('하루 사용량이 저장되었습니다.', 'success');
         } else {
             showAlert('저장 실패', 'error');
         }
     } catch (error) {
-        console.error('적정 재고 저장 오류:', error);
+        console.error('하루 사용량 저장 오류:', error);
         showAlert('저장 중 오류 발생', 'error');
     }
 }
@@ -566,29 +609,42 @@ async function loadHolidays() {
         
         if (result.success) {
             holidays = result.holidays;
-            renderHolidays();
+            renderAllHolidays();
         }
     } catch (error) {
         console.error('휴일 로드 실패:', error);
     }
 }
 
-// 휴일 렌더링
-function renderHolidays() {
-    const container = document.getElementById('holidayList');
+// 모든 휴일 렌더링
+function renderAllHolidays() {
+    renderHolidayList('store', 'storeHolidayList');
+    renderHolidayList('삼시세끼', 'samsiHolidayList');
+    renderHolidayList('SPC', 'spcHolidayList');
+    renderHolidayList('기타', 'etcHolidayList');
+}
+
+// 휴일 리스트 렌더링 (요일 포함)
+function renderHolidayList(type, containerId) {
+    const container = document.getElementById(containerId);
     if (!container) return;
     
-    if (holidays.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">등록된 휴일이 없습니다.</p>';
+    const holidayList = holidays[type] || [];
+    
+    if (holidayList.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #999; padding: 15px;">등록된 휴일이 없습니다.</p>';
         return;
     }
     
     let html = '';
-    holidays.forEach((holiday, index) => {
+    holidayList.forEach((dateStr, index) => {
+        const date = new Date(dateStr + 'T00:00:00');
+        const dayOfWeek = WEEKDAYS[date.getDay()];
+        
         html += `
             <div class="holiday-item">
-                <span class="holiday-date">${holiday}</span>
-                <button class="btn-danger" onclick="removeHoliday(${index})">삭제</button>
+                <span class="holiday-date">${dateStr}(${dayOfWeek})</span>
+                <button class="btn-danger" onclick="removeHoliday('${type}', ${index})">삭제</button>
             </div>
         `;
     });
@@ -597,8 +653,18 @@ function renderHolidays() {
 }
 
 // 휴일 추가
-async function addHoliday() {
-    const dateInput = document.getElementById('holidayDate');
+async function addHoliday(type) {
+    let dateInput;
+    if (type === 'store') {
+        dateInput = document.getElementById('storeHolidayDate');
+    } else if (type === '삼시세끼') {
+        dateInput = document.getElementById('samsiHolidayDate');
+    } else if (type === 'SPC') {
+        dateInput = document.getElementById('spcHolidayDate');
+    } else if (type === '기타') {
+        dateInput = document.getElementById('etcHolidayDate');
+    }
+    
     const date = dateInput.value;
     
     if (!date) {
@@ -606,13 +672,17 @@ async function addHoliday() {
         return;
     }
     
-    if (holidays.includes(date)) {
+    if (!holidays[type]) {
+        holidays[type] = [];
+    }
+    
+    if (holidays[type].includes(date)) {
         showAlert('이미 등록된 날짜입니다.', 'error');
         return;
     }
     
-    holidays.push(date);
-    holidays.sort();
+    holidays[type].push(date);
+    holidays[type].sort();
     
     try {
         const response = await fetch(`${API_BASE}/api/inventory/holidays`, {
@@ -624,7 +694,7 @@ async function addHoliday() {
         const result = await response.json();
         if (result.success) {
             dateInput.value = '';
-            renderHolidays();
+            renderAllHolidays();
             showAlert('휴일이 추가되었습니다.', 'success');
         }
     } catch (error) {
@@ -634,10 +704,10 @@ async function addHoliday() {
 }
 
 // 휴일 삭제
-async function removeHoliday(index) {
+async function removeHoliday(type, index) {
     if (!confirm('이 휴일을 삭제하시겠습니까?')) return;
     
-    holidays.splice(index, 1);
+    holidays[type].splice(index, 1);
     
     try {
         const response = await fetch(`${API_BASE}/api/inventory/holidays`, {
@@ -648,7 +718,7 @@ async function removeHoliday(index) {
         
         const result = await response.json();
         if (result.success) {
-            renderHolidays();
+            renderAllHolidays();
             showAlert('휴일이 삭제되었습니다.', 'success');
         }
     } catch (error) {
@@ -657,11 +727,75 @@ async function removeHoliday(index) {
     }
 }
 
+// 재고 내역 로드
+async function loadInventoryHistory() {
+    try {
+        const period = document.getElementById('invHistoryPeriod').value;
+        const vendor = document.getElementById('invHistoryVendor').value;
+        
+        const response = await fetch(`${API_BASE}/api/inventory/history?period=${period}&vendor=${vendor}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            renderInventoryHistory(result.history);
+        }
+    } catch (error) {
+        console.error('재고 내역 로드 실패:', error);
+        showAlert('재고 내역 로드 실패', 'error');
+    }
+}
+
+// 재고 내역 렌더링
+function renderInventoryHistory(history) {
+    const container = document.getElementById('inventoryHistoryList');
+    if (!container) return;
+    
+    if (!history || history.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #999; padding: 30px;">재고 내역이 없습니다.</p>';
+        return;
+    }
+    
+    let html = '';
+    history.forEach(record => {
+        const date = new Date(record.date + 'T' + record.time);
+        const dayOfWeek = WEEKDAYS[date.getDay()];
+        
+        for (const vendor in record.inventory) {
+            const vendorItems = items[vendor] || [];
+            if (vendorItems.length === 0) continue;
+            
+            html += `
+                <div class="history-item">
+                    <div class="history-header">
+                        <span class="history-date">${record.date}(${dayOfWeek}) ${record.time}</span>
+                        <span class="history-vendor">${vendor}</span>
+                    </div>
+                    <div class="history-items">
+            `;
+            
+            vendorItems.forEach(item => {
+                const itemKey = `${vendor}_${item.품목명}`;
+                const stock = record.inventory[itemKey] || 0;
+                if (stock > 0 || true) { // 모든 품목 표시
+                    html += `${item.품목명}: ${stock}${item.발주단위}<br>`;
+                }
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        }
+    });
+    
+    container.innerHTML = html;
+}
+
 // 발주 내역 로드
 async function loadOrderHistory() {
     try {
-        const period = document.getElementById('periodFilter').value;
-        const vendor = document.getElementById('vendorFilter').value;
+        const period = document.getElementById('orderPeriodFilter').value;
+        const vendor = document.getElementById('orderVendorFilter').value;
         
         const response = await fetch(`${API_BASE}/api/inventory/orders?period=${period}&vendor=${vendor}`);
         const result = await response.json();
@@ -677,7 +811,7 @@ async function loadOrderHistory() {
 
 // 발주 내역 렌더링
 function renderOrderHistory(orders) {
-    const container = document.getElementById('historyList');
+    const container = document.getElementById('orderHistoryList');
     if (!container) return;
     
     if (!orders || orders.length === 0) {
@@ -687,13 +821,16 @@ function renderOrderHistory(orders) {
     
     let html = '';
     orders.forEach(order => {
+        const date = new Date(order.date + 'T' + order.time);
+        const dayOfWeek = WEEKDAYS[date.getDay()];
+        
         for (const vendor in order.orders) {
             const items = order.orders[vendor];
             if (items.length > 0) {
                 html += `
                     <div class="history-item">
                         <div class="history-header">
-                            <span class="history-date">${order.date} ${order.time}</span>
+                            <span class="history-date">${order.date}(${dayOfWeek}) ${order.time}</span>
                             <span class="history-vendor">${vendor}</span>
                         </div>
                         <div class="history-items">
