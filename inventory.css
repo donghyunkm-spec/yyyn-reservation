@@ -705,3 +705,295 @@ body {
         padding: 15px 5px;
     }
 }
+
+/* [inventory.css] 모달 내 업체별 복사 버튼 스타일 추가 */
+
+.order-section-header {
+    display: flex;
+    justify-content: space-between;  /* 이름은 왼쪽, 버튼은 오른쪽 */
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #eee;
+}
+
+.order-section-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    color: #333;
+}
+
+.btn-mini-kakao {
+    background-color: #FEE500;
+    color: #3C1E1E;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-mini-kakao:hover {
+    background-color: #fdd835;
+    transform: translateY(-1px);
+}
+
+.btn-mini-kakao:active {
+    transform: translateY(0);
+}
+
+/* [inventory.css] 엑셀 스타일 테이블 추가 */
+.excel-table {
+    width: 100%;
+    border-collapse: collapse; /* 테두리 겹치게(엑셀처럼) */
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.excel-table th, 
+.excel-table td {
+    border: 1px solid #999; /* 진한 회색 실선 */
+    padding: 8px;
+    text-align: center;
+    color: #333;
+}
+
+.excel-table th {
+    background-color: #f0f0f0; /* 헤더 회색 배경 */
+    font-weight: bold;
+}
+
+.excel-table tr:nth-child(even) {
+    background-color: #fafafa; /* 줄무늬 효과 살짝 */
+}
+
+/* 품목명은 왼쪽 정렬이 보기 좋음 */
+.excel-table td.text-left {
+    text-align: left;
+}
+
+/* 모달 내 SPC 바로가기 버튼 */
+.btn-goto-history {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.btn-goto-history:hover {
+    background-color: #5a6268;
+}
+
+/* --- [NEW] 품목 관리 스타일 --- */
+
+/* --- [NEW] 품목 관리 스타일 (업그레이드 버전) --- */
+
+/* 1. 추가 폼 영역: 깔끔한 카드 스타일로 변경 */
+.add-item-box {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid #e0e0e0;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.add-item-box:focus-within {
+    border-color: #4CAF50;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.15);
+}
+
+.add-item-box h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #2e7d32; /* 진한 녹색 */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.add-item-form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.add-item-form select, 
+.add-item-form input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    flex: 1;
+    font-size: 14px;
+    transition: border 0.3s;
+    background: #f9f9f9;
+}
+
+.add-item-form select:focus,
+.add-item-form input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    background: white;
+}
+
+/* 추가 버튼 스타일 강화 */
+.add-item-form .btn-primary {
+    flex: 0 0 auto; /* 너비 자동 조절 방지 */
+    min-width: 80px;
+    background: #2e7d32;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 2. 관리 리스트 영역 */
+.manage-vendor-selector {
+    margin-bottom: 15px;
+}
+.manage-vendor-selector select {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    border: 2px solid #4CAF50;
+    background-color: white;
+    color: #2e7d32;
+    cursor: pointer;
+}
+
+.manage-ul {
+    list-style: none;
+    padding: 5px;
+    max-height: 55vh;
+    overflow-y: auto;
+    background: #f5f5f5; /* 리스트 배경 회색 */
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+/* 스크롤바 꾸미기 */
+.manage-ul::-webkit-scrollbar {
+    width: 8px;
+}
+.manage-ul::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+}
+
+/* 3. 개별 품목 (카드 형태) */
+.manage-li {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border: 1px solid transparent;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.manage-li:last-child {
+    margin-bottom: 0;
+}
+
+.manage-li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: #81c784;
+}
+
+/* 순서 변경 버튼 (화살표) 디자인 */
+.manage-controls {
+    display: flex;
+    flex-direction: column;
+    margin-right: 15px;
+    gap: 4px;
+    justify-content: center;
+}
+
+.btn-move {
+    background: #f1f8e9;
+    color: #33691e;
+    border: 1px solid #dcedc8;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-move:hover {
+    background: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}
+
+/* 품목 텍스트 정보 */
+.manage-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.manage-name {
+    font-weight: bold;
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.manage-unit {
+    font-size: 12px;
+    color: #888;
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    width: fit-content;
+}
+
+/* 삭제 버튼 디자인 */
+.btn-delete {
+    background: white;
+    color: #e53935;
+    border: 1px solid #e53935;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-delete:hover {
+    background: #ffebee;
+    box-shadow: 0 2px 4px rgba(229, 57, 53, 0.2);
+}
+
+/* 모바일 대응 */
+@media (max-width: 480px) {
+    .add-item-form {
+        flex-direction: column;
+    }
+    .add-item-form .btn-primary {
+        width: 100%;
+        margin-top: 5px;
+    }
+    .manage-li {
+        padding: 10px;
+    }
+}
