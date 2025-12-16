@@ -1,379 +1,19 @@
 [
   {
-    "date": "2025-12-16",
-    "time": "20:21",
-    "orders": {
-      "삼시세끼": [
-        {
-          "품목명": "부추",
-          "중요도": "상",
-          "발주단위": "단",
-          "orderAmount": 2,
-          "daysNeeded": 1,
-          "displayUnit": "단"
-        },
-        {
-          "품목명": "배추",
-          "중요도": "상",
-          "발주단위": "망",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "망"
-        },
-        {
-          "품목명": "업소용 대파",
-          "중요도": "상",
-          "발주단위": "단",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "단"
-        },
-        {
-          "품목명": "양파",
-          "중요도": "중",
-          "발주단위": "망",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "망"
-        },
-        {
-          "품목명": "쪽파",
-          "중요도": "중",
-          "발주단위": "단",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "단"
-        },
-        {
-          "품목명": "청양고추",
-          "중요도": "하",
-          "발주단위": "kg",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "판두부",
-          "중요도": "상",
-          "발주단위": "판",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "판"
-        },
-        {
-          "품목명": "굴(생굴)",
-          "중요도": "중",
-          "발주단위": "kg",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "쌀",
-          "중요도": "중",
-          "발주단위": "포대",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "포대"
-        },
-        {
-          "품목명": "다진마늘(냉동)",
-          "중요도": "중",
-          "발주단위": "봉지",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "봉지"
-        },
-        {
-          "품목명": "생수 500ml",
-          "중요도": "상",
-          "발주단위": "개",
-          "orderAmount": 3,
-          "daysNeeded": 1,
-          "displayUnit": "개"
-        }
-      ],
-      "SPC": [
-        {
-          "품목명": "삼겹살(양은이네/20kg/냉동/수입산)",
-          "발주단위": "kg",
-          "orderAmount": 20,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "[6통]동태(양은이네/20kg/냉동/수입산)",
-          "발주단위": "box",
-          "orderAmount": 20,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "손질오징어(양은이네/30미/냉동/수입산)",
-          "발주단위": "box",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "box"
-        },
-        {
-          "품목명": "냉면육수(양은이네/10kg/상온)",
-          "발주단위": "box",
-          "orderAmount": 10,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "돌돌김치다대기(양은이네/10kg/냉장/국내산)",
-          "발주단위": "box",
-          "orderAmount": 10,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "춘천막국수(양은이네/20kg/냉동/국내산)",
-          "발주단위": "box",
-          "orderAmount": 20,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "명태곤이(양은이네/22.5kg/냉동/수입산)",
-          "발주단위": "box",
-          "orderAmount": 22.5,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "어리굴젓(양은이네/8kg/냉동/국내산)",
-          "발주단위": "box",
-          "orderAmount": 8,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "명태회무침(양은이네/10kg/냉장/국내산)",
-          "발주단위": "box",
-          "orderAmount": 10,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "무생채양념소스(양은이네/10kg/냉장/국내산)",
-          "발주단위": "box",
-          "orderAmount": 10,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        }
-      ],
-      "기타": [
-        {
-          "품목명": "굴",
-          "발주단위": "kg",
-          "orderAmount": 4,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "도시락용기",
-          "발주단위": "개",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "개"
-        }
-      ]
-    }
-  },
-  {
-    "date": "2025-12-16",
-    "time": "20:23",
-    "orders": {
-      "삼시세끼": [
-        {
-          "품목명": "부추",
-          "중요도": "상",
-          "발주단위": "단",
-          "orderAmount": 2,
-          "daysNeeded": 1,
-          "displayUnit": "단"
-        },
-        {
-          "품목명": "배추",
-          "중요도": "상",
-          "발주단위": "망",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "망"
-        },
-        {
-          "품목명": "업소용 대파",
-          "중요도": "상",
-          "발주단위": "단",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "단"
-        },
-        {
-          "품목명": "양파",
-          "중요도": "중",
-          "발주단위": "망",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "망"
-        },
-        {
-          "품목명": "쪽파",
-          "중요도": "중",
-          "발주단위": "단",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "단"
-        },
-        {
-          "품목명": "청양고추",
-          "중요도": "하",
-          "발주단위": "kg",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "판두부",
-          "중요도": "상",
-          "발주단위": "판",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "판"
-        },
-        {
-          "품목명": "굴(생굴)",
-          "중요도": "중",
-          "발주단위": "kg",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "쌀",
-          "중요도": "중",
-          "발주단위": "포대",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "포대"
-        },
-        {
-          "품목명": "다진마늘(냉동)",
-          "중요도": "중",
-          "발주단위": "봉지",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "봉지"
-        },
-        {
-          "품목명": "생수 500ml",
-          "중요도": "상",
-          "발주단위": "개",
-          "orderAmount": 3,
-          "daysNeeded": 1,
-          "displayUnit": "개"
-        }
-      ],
-      "SPC": [
-        {
-          "품목명": "삼겹살(양은이네/20kg/냉동/수입산)",
-          "발주단위": "kg",
-          "orderAmount": 20,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "[6통]동태(양은이네/20kg/냉동/수입산)",
-          "발주단위": "box",
-          "orderAmount": 20,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "손질오징어(양은이네/30미/냉동/수입산)",
-          "발주단위": "box",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "box"
-        },
-        {
-          "품목명": "냉면육수(양은이네/10kg/상온)",
-          "발주단위": "box",
-          "orderAmount": 10,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "돌돌김치다대기(양은이네/10kg/냉장/국내산)",
-          "발주단위": "box",
-          "orderAmount": 10,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "춘천막국수(양은이네/20kg/냉동/국내산)",
-          "발주단위": "box",
-          "orderAmount": 20,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "명태곤이(양은이네/22.5kg/냉동/수입산)",
-          "발주단위": "box",
-          "orderAmount": 22.5,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "어리굴젓(양은이네/8kg/냉동/국내산)",
-          "발주단위": "box",
-          "orderAmount": 8,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "명태회무침(양은이네/10kg/냉장/국내산)",
-          "발주단위": "box",
-          "orderAmount": 10,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "무생채양념소스(양은이네/10kg/냉장/국내산)",
-          "발주단위": "box",
-          "orderAmount": 10,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        }
-      ],
-      "기타": [
-        {
-          "품목명": "굴",
-          "발주단위": "kg",
-          "orderAmount": 4,
-          "daysNeeded": 1,
-          "displayUnit": "kg"
-        },
-        {
-          "품목명": "도시락용기",
-          "발주단위": "개",
-          "orderAmount": 1,
-          "daysNeeded": 1,
-          "displayUnit": "개"
-        }
-      ]
-    }
-  },
-  {
     "orders": [
       {
         "date": "2025-12-16",
-        "time": "20:55",
+        "time": "22:27",
         "orders": {
           "삼시세끼": [
+            {
+              "품목명": "업소용 대파",
+              "중요도": "상",
+              "발주단위": "단",
+              "orderAmount": 1,
+              "daysNeeded": 1,
+              "displayUnit": "단"
+            },
             {
               "품목명": "부추",
               "중요도": "상",
@@ -389,14 +29,6 @@
               "orderAmount": 1,
               "daysNeeded": 1,
               "displayUnit": "망"
-            },
-            {
-              "품목명": "업소용 대파",
-              "중요도": "상",
-              "발주단위": "단",
-              "orderAmount": 1,
-              "daysNeeded": 1,
-              "displayUnit": "단"
             },
             {
               "품목명": "양파",
@@ -638,5 +270,273 @@
         }
       }
     ]
+  },
+  {
+    "date": "2025-12-16",
+    "time": "22:35",
+    "orders": {
+      "삼시세끼": [
+        {
+          "품목명": "업소용 대파",
+          "중요도": "상",
+          "발주단위": "단",
+          "orderAmount": 1,
+          "daysNeeded": 1,
+          "displayUnit": "단"
+        },
+        {
+          "품목명": "부추",
+          "중요도": "상",
+          "발주단위": "단",
+          "orderAmount": 2,
+          "daysNeeded": 1,
+          "displayUnit": "단"
+        },
+        {
+          "품목명": "배추",
+          "중요도": "상",
+          "발주단위": "망",
+          "orderAmount": 1,
+          "daysNeeded": 1,
+          "displayUnit": "망"
+        },
+        {
+          "품목명": "양파",
+          "중요도": "중",
+          "발주단위": "망",
+          "orderAmount": 1,
+          "daysNeeded": 1,
+          "displayUnit": "망"
+        },
+        {
+          "품목명": "쪽파",
+          "중요도": "중",
+          "발주단위": "단",
+          "orderAmount": 1,
+          "daysNeeded": 1,
+          "displayUnit": "단"
+        },
+        {
+          "품목명": "청양고추",
+          "중요도": "하",
+          "발주단위": "kg",
+          "orderAmount": 1,
+          "daysNeeded": 1,
+          "displayUnit": "kg"
+        },
+        {
+          "품목명": "판두부",
+          "중요도": "상",
+          "발주단위": "판",
+          "orderAmount": 1,
+          "daysNeeded": 1,
+          "displayUnit": "판"
+        },
+        {
+          "품목명": "굴(생굴)",
+          "중요도": "중",
+          "발주단위": "kg",
+          "orderAmount": 1,
+          "daysNeeded": 1,
+          "displayUnit": "kg"
+        },
+        {
+          "품목명": "쌀",
+          "중요도": "중",
+          "발주단위": "포대",
+          "orderAmount": 1,
+          "daysNeeded": 1,
+          "displayUnit": "포대"
+        },
+        {
+          "품목명": "다진마늘(냉동)",
+          "중요도": "중",
+          "발주단위": "봉지",
+          "orderAmount": 1,
+          "daysNeeded": 1,
+          "displayUnit": "봉지"
+        },
+        {
+          "품목명": "생수 500ml",
+          "중요도": "상",
+          "발주단위": "개",
+          "orderAmount": 3,
+          "daysNeeded": 1,
+          "displayUnit": "개"
+        }
+      ],
+      "SPC": [
+        {
+          "품목명": "삼겹살(양은이네/20kg/냉동/수입산)",
+          "발주단위": "kg",
+          "orderAmount": 20,
+          "daysNeeded": 1,
+          "displayUnit": "kg"
+        },
+        {
+          "품목명": "[6통]동태(양은이네/20kg/냉동/수입산)",
+          "발주단위": "box",
+          "orderAmount": 20,
+          "daysNeeded": 1,
+          "displayUnit": "kg"
+        },
+        {
+          "품목명": "손질오징어(양은이네/30미/냉동/수입산)",
+          "발주단위": "box",
+          "orderAmount": 1,
+          "daysNeeded": 1,
+          "displayUnit": "box"
+        },
+        {
+          "품목명": "냉면육수(양은이네/10kg/상온)",
+          "발주단위": "box",
+          "orderAmount": 10,
+          "daysNeeded": 1,
+          "displayUnit": "kg"
+        },
+        {
+          "품목명": "돌돌김치다대기(양은이네/10kg/냉장/국내산)",
+          "발주단위": "box",
+          "orderAmount": 10,
+          "daysNeeded": 1,
+          "displayUnit": "kg"
+        },
+        {
+          "품목명": "춘천막국수(양은이네/20kg/냉동/국내산)",
+          "발주단위": "box",
+          "orderAmount": 20,
+          "daysNeeded": 1,
+          "displayUnit": "kg"
+        },
+        {
+          "품목명": "명태곤이(양은이네/22.5kg/냉동/수입산)",
+          "발주단위": "box",
+          "orderAmount": 22.5,
+          "daysNeeded": 1,
+          "displayUnit": "kg"
+        },
+        {
+          "품목명": "어리굴젓(양은이네/8kg/냉동/국내산)",
+          "발주단위": "box",
+          "orderAmount": 8,
+          "daysNeeded": 1,
+          "displayUnit": "kg"
+        },
+        {
+          "품목명": "명태회무침(양은이네/10kg/냉장/국내산)",
+          "발주단위": "box",
+          "orderAmount": 10,
+          "daysNeeded": 1,
+          "displayUnit": "kg"
+        },
+        {
+          "품목명": "무생채양념소스(양은이네/10kg/냉장/국내산)",
+          "발주단위": "box",
+          "orderAmount": 10,
+          "daysNeeded": 1,
+          "displayUnit": "kg"
+        }
+      ],
+      "기타": [
+        {
+          "품목명": "굴",
+          "발주단위": "kg",
+          "orderAmount": 4,
+          "daysNeeded": 1,
+          "displayUnit": "kg"
+        },
+        {
+          "품목명": "도시락용기",
+          "발주단위": "개",
+          "orderAmount": 1,
+          "daysNeeded": 1,
+          "displayUnit": "개"
+        }
+      ]
+    },
+    "inventory": {
+      "삼시세끼_부추": 1,
+      "삼시세끼_배추": 1,
+      "삼시세끼_무": 1,
+      "삼시세끼_업소용 대파": 1,
+      "삼시세끼_오이": 3,
+      "삼시세끼_상추": 1,
+      "삼시세끼_양파": 0.2,
+      "삼시세끼_쪽파": 0.1,
+      "삼시세끼_청양고추": 0.1,
+      "삼시세끼_당근": 1,
+      "삼시세끼_적채": 1,
+      "삼시세끼_호박고구마": 1,
+      "삼시세끼_판두부": 1,
+      "삼시세끼_곱슬이 콩나물": 1,
+      "삼시세끼_굴(생굴)": 3,
+      "삼시세끼_쌀": 0.3,
+      "삼시세끼_라면사리": 1,
+      "삼시세끼_신라면": 1,
+      "삼시세끼_떡국떡": 1,
+      "삼시세끼_계란": 1,
+      "삼시세끼_계란 지단": 0.2,
+      "삼시세끼_마늘(깐마늘)": 0.5,
+      "삼시세끼_다진마늘(냉동)": 0.1,
+      "삼시세끼_백설/해표 참기름": 0.1,
+      "삼시세끼_들깨가루(껍질없는)": 0.1,
+      "삼시세끼_와사비분": 0.3,
+      "삼시세끼_와사비믹스간장": 2,
+      "삼시세끼_간장(몽고/말통)": 2,
+      "삼시세끼_쌈장(양념)": 2,
+      "삼시세끼_식용유": 2,
+      "삼시세끼_굵은소금": 2,
+      "삼시세끼_설탕": 2,
+      "삼시세끼_통후추": 2,
+      "삼시세끼_월계수잎": 2,
+      "삼시세끼_파슬리가루": 2,
+      "삼시세끼_쇠고기다시다": 2,
+      "삼시세끼_재래식된장(트리오)": 2,
+      "삼시세끼_중국산 배추김치": 2,
+      "삼시세끼_냉면용 흰김치": 2,
+      "삼시세끼_홀 흰 쌈무": 2,
+      "삼시세끼_스위트콘": 2,
+      "삼시세끼_미역줄기": 2,
+      "삼시세끼_마요네즈": 2,
+      "삼시세끼_건포도": 1,
+      "삼시세끼_김가루": 1,
+      "삼시세끼_볶음참깨": 1,
+      "삼시세끼_곰표 밀가루": 1,
+      "삼시세끼_생수 500ml": 1,
+      "삼시세끼_물티슈": 1,
+      "삼시세끼_네프킨/냅킨": 1,
+      "삼시세끼_종이컵": 1,
+      "삼시세끼_라텍스장갑": 1,
+      "삼시세끼_종량제봉투": 1,
+      "삼시세끼_목장갑": 1,
+      "삼시세끼_랩": 1,
+      "삼시세끼_파란봉지": 1,
+      "삼시세끼_핸드타올": 1,
+      "삼시세끼_위생장갑": 1,
+      "삼시세끼_롤밧": 1,
+      "삼시세끼_분무기": 1,
+      "삼시세끼_퐁퐁 펌프통": 1,
+      "삼시세끼_세탁세제": 1,
+      "삼시세끼_고기만두": 1,
+      "삼시세끼_김치만두": 1,
+      "SPC_삼겹살(양은이네/20kg/냉동/수입산)": 10,
+      "SPC_[6통]동태(양은이네/20kg/냉동/수입산)": 10,
+      "SPC_손질오징어(양은이네/30미/냉동/수입산)": 10,
+      "SPC_냉면육수(양은이네/10kg/상온)": 0,
+      "SPC_덩어리편육(양은이네/300g/냉동/국내산)": 5,
+      "SPC_돌돌김치다대기(양은이네/10kg/냉장/국내산)": 2,
+      "SPC_초무침소스(양은이네/10kg/냉장/국내산)": 7,
+      "SPC_춘천막국수(양은이네/20kg/냉동/국내산)": 7,
+      "SPC_동태탕시즈닝(양은이네/10kg/상온/국내산)": 1,
+      "SPC_명태곤이(양은이네/22.5kg/냉동/수입산)": 4,
+      "SPC_명란(양은이네/22.5kg/냉동/수입산)": 9,
+      "SPC_보쌈무생채(양은이네/10kg/냉동/국내산)": 2,
+      "SPC_어리굴젓(양은이네/8kg/냉동/국내산)": 0,
+      "SPC_불냉면소스(양은이네/10kg/냉장/국내산)": 1,
+      "SPC_명태회무침(양은이네/10kg/냉장/국내산)": 0,
+      "SPC_무생채양념소스(양은이네/10kg/냉장/국내산)": 0,
+      "기타_굴": 0,
+      "기타_도시락용기": 0
+    }
   }
 ]

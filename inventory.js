@@ -12,6 +12,7 @@ let holidays = {
     '기타': []
 };
 let lastOrderDates = {};
+let recentHistory = []; // (변경) 어제 재고 -> 최근 재고 리스트로 변경
 
 // ==========================================================
 // 추가된 전역 변수
@@ -66,7 +67,7 @@ async function showMainScreen() {
     document.getElementById('mainScreen').style.display = 'block';
     
     await loadData();
-    await loadYesterdayInventory(); // 이 줄 추가
+    await loadRecentInventory(); // (변경) 이름 변경됨
     renderUnifiedInventoryForm();
     renderStandardForm();
     loadHolidays();
@@ -217,12 +218,22 @@ function renderUnifiedInventoryForm() {
     formContainer.innerHTML = html;
 }
 
-// 개별 품목 렌더링 함수 (어제 재고 표시 포함)
+// [inventory.js] renderItemGroup 함수 (개선 버전)
 function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
     const currentStock = inventory[itemKey] || 0;
     const usage = dailyUsage[itemKey] || 0;
-    const yesterdayStock = yesterdayInventory[itemKey] || null;
     
+    // 어제 재고 찾기
+    let yesterdayStock = null;
+    const todayStr = new Date().toISOString().split('T')[0];
+    const lastRecord = recentHistory.find(r => r.date !== todayStr);
+    
+    if (lastRecord && lastRecord.inventory[vendor]) {
+         const val = lastRecord.inventory[vendor][itemKey];
+         if (val !== undefined) yesterdayStock = val;
+    }
+
+    // 단위 설정
     let displayUnit = item.발주단위;
     if (vendor === 'SPC') {
         const spcInfo = getSPCInfo(item.품목명);
@@ -234,39 +245,74 @@ function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
     // 마지막 발주일 표시
     let lastOrderDisplay = '';
     if (lastOrderDate) {
-        const daysColor = daysSince > 10 ? '#f44336' : (daysSince > 7 ? '#ef6c00' : '#666');
-        lastOrderDisplay = `<span style="font-size:11px; color:${daysColor}; margin-left:8px;">📅 ${lastOrderDate} (${daysSince}일전)</span>`;
+        const daysColor = daysSince > 10 ? '#f44336' : (daysSince > 7 ? '#ef6c00' : '#999');
+        lastOrderDisplay = `<span style="font-size:11px; font-weight:normal; color:${daysColor}; margin-left:8px;">📅 ${daysSince}일전</span>`;
     } else {
-        lastOrderDisplay = `<span style="font-size:11px; color:#999; margin-left:8px;">📅 발주기록없음</span>`;
+         lastOrderDisplay = `<span style="font-size:11px; font-weight:normal; color:#bbb; margin-left:8px;">(발주없음)</span>`;
     }
-    
-    // 어제 재고 표시
-    let yesterdayDisplay = '';
+
+    // 전일 재고 값 및 버튼 상태 설정
+    let prevValueDisplay = '-';
+    let btnDisabled = 'disabled';
+    let btnClass = 'btn-same disabled';
+    let btnOnClick = '';
+
     if (yesterdayStock !== null) {
-        yesterdayDisplay = `<span style="font-size:10px; color:#999; margin-left:5px;">(어제: ${yesterdayStock})</span>`;
+        prevValueDisplay = yesterdayStock;
+        btnDisabled = '';
+        btnClass = 'btn-same';
+        btnOnClick = `onclick="setStockValue('${itemKey}', ${yesterdayStock})"`;
     }
-    
+
+    // HTML 렌더링 (깔끔한 레이아웃)
     let html = `
-        <div class="item-group">
-            <div class="item-header">
-                <span class="item-name">${item.품목명}${lastOrderDisplay}</span>
+        <div class="item-group compact-group">
+            <div class="item-header-compact">
+                <span class="item-name">
+                    ${item.품목명}
+                    ${lastOrderDisplay}
+                </span>
                 ${item.중요도 ? `<span class="item-importance importance-${item.중요도}">${item.중요도}</span>` : ''}
             </div>
-            <div class="item-inputs-inline">
-                <div class="input-inline">
-                    <label>현재재고${yesterdayDisplay}</label>
-                    <div class="input-wrapper">
-                        <input type="number" id="current_${itemKey}" value="${displayStockValue}" min="0" step="0.1" inputmode="decimal" placeholder="0">
-                        <span class="unit-text">${displayUnit}</span>
+
+            <div class="inventory-row-controls">
+                
+                <!-- 1. 전일 재고 -->
+                <div class="control-cell prev-cell">
+                    <span class="cell-label">전일재고</span>
+                    <div class="prev-value-box">
+                        <span class="value">${prevValueDisplay}</span>
+                        <span class="unit">${displayUnit}</span>
                     </div>
                 </div>
-                <div class="input-inline">
-                    <label>하루사용량</label>
+
+                <!-- 2. 어제값 복사 버튼 -->
+                <div class="control-cell btn-cell">
+                    <span class="cell-label">어제값</span>
+                    <button type="button" class="${btnClass}" ${btnOnClick} ${btnDisabled} title="전일 재고와 동일하게 입력">
+                        ↑
+                    </button>
+                </div>
+
+                <!-- 3. 현재 재고 입력 -->
+                <div class="control-cell input-cell">
+                    <span class="cell-label">현재재고</span>
                     <div class="input-wrapper">
-                        <input type="text" value="${usage}" readonly style="background: #f9f9f9; color: #666;">
-                        <span class="unit-text">${displayUnit}</span>
+                        <input type="number" id="current_${itemKey}" value="${displayStockValue}" 
+                               min="0" step="0.1" inputmode="decimal" placeholder="0">
+                        <span class="unit">${displayUnit}</span>
                     </div>
                 </div>
+                
+                <!-- 4. 하루 사용량 -->
+                <div class="control-cell usage-cell">
+                    <span class="cell-label">하루사용</span>
+                    <div class="usage-wrapper">
+                        <span class="usage-value">${usage}</span>
+                        <span class="unit">${displayUnit}</span>
+                    </div>
+                </div>
+
             </div>
         </div>
     `;
@@ -428,10 +474,17 @@ function getDeliveryInfo(vendor) {
     };
 }
 
-// 4. 발주 확인 계산 로직 (수정됨: 삼시세끼 올림 처리 / SPC 팩 단위 계산)
-// 4. 발주 확인 계산 로직 (수정됨: 오징어/편육 계산 로직 추가)
+// [inventory.js 내 checkOrderConfirmation 함수 전체 교체]
 async function checkOrderConfirmation() {
     const confirmItems = { '삼시세끼': [], 'SPC': [], '기타': [] };
+    
+    // 오늘 날짜 제외하고 과거 데이터만 추출 (T-1, T-2 비교용)
+    const todayStr = new Date().toISOString().split('T')[0];
+    const pastRecords = recentHistory.filter(r => r.date !== todayStr);
+    
+    // 최근 2일치 데이터 (어제, 그제)
+    const recordD1 = pastRecords[0]; // 어제 (가장 최근)
+    const recordD2 = pastRecords[1]; // 그제
     
     for (const vendor in items) {
         const vendorItems = items[vendor];
@@ -439,31 +492,30 @@ async function checkOrderConfirmation() {
         
         vendorItems.forEach(item => {
             const itemKey = `${vendor}_${item.품목명}`;
-            const currentStock = inventory[itemKey] || 0;
+            // 현재 입력된 값 가져오기 (DB값이 아니라 현재 input 값이어야 함)
+            const inputEl = document.getElementById(`current_${itemKey}`);
+            const currentInputValue = inputEl ? (inputEl.value === '' ? 0 : parseFloat(inputEl.value)) : 0;
+            
+            // inventory 변수에는 아직 저장이 안 된 상태일 수 있으므로 input 값 우선 사용
             const usage = dailyUsage[itemKey] || 0;
             const neededTotal = usage * daysNeeded;
             
-            // 순수 부족분 (입력 단위 기준: kg 또는 개)
-            let orderAmountRaw = Math.max(0, neededTotal - currentStock);
+            // 순수 부족분
+            let orderAmountRaw = Math.max(0, neededTotal - currentInputValue);
             
             let displayQty = 0;
             let displayUnit = item.발주단위;
 
             if (vendor === 'SPC') {
                 const spcInfo = getSPCInfo(item.품목명);
-                displayUnit = spcInfo.unit; // 최종 발주 단위 (box, pak, kg)
+                displayUnit = spcInfo.unit; 
 
                 if (orderAmountRaw > 0) {
-                    // spcInfo.weight는 오징어의 경우 30, 일반 품목은 무게
-                    // 부족분 / 기준값 -> 올림 처리
                     const packsNeeded = Math.ceil(orderAmountRaw / spcInfo.weight);
-                    
                     if (spcInfo.type === 'weight' && spcInfo.unit === 'kg') {
-                        // 무게 단위 발주 품목 (예: 삼겹살 20kg)
-                        displayQty = packsNeeded * spcInfo.weight;
+                        displayQty = packsNeeded * spcInfo.weight; 
                     } else {
-                        // 갯수 단위 발주 (오징어 box, 편육 pak, 동태 box 등)
-                        displayQty = packsNeeded;
+                        displayQty = packsNeeded; 
                     }
                 }
             } else if (vendor === '삼시세끼') {
@@ -478,14 +530,26 @@ async function checkOrderConfirmation() {
             let needsConfirmation = false;
             let reason = '';
             
-            if (vendor === '삼시세끼' || vendor === 'SPC') {
-                // 중요 품목인데 0개면 확인 필요
-                if (displayQty === 0 && (item.중요도 === '상' || item.중요도 === '중')) {
-                    needsConfirmation = true; reason = `중요 품목 미발주`;
-                }
-                // SPC는 무조건 확인 (원하시면 제거 가능)
-                if (vendor === 'SPC' && displayQty === 0) {
-                     needsConfirmation = true; reason = 'SPC 품목 미발주';
+            // 1. 발주량 0인데 중요품목인 경우
+            if (displayQty === 0 && (item.중요도 === '상' || item.중요도 === '중')) {
+                needsConfirmation = true; reason = `중요 품목 미발주`;
+            }
+            if (vendor === 'SPC' && displayQty === 0) {
+                 needsConfirmation = true; reason = 'SPC 품목 미발주';
+            }
+
+            // [NEW] 2. 3일 연속 동일 재고 체크 (재고가 0이 아닐 때만)
+            if (currentInputValue > 0 && recordD1 && recordD2) {
+                // 해당 품목의 과거 재고 가져오기
+                const stockD1 = recordD1.inventory[vendor] ? recordD1.inventory[vendor][itemKey] : undefined;
+                const stockD2 = recordD2.inventory[vendor] ? recordD2.inventory[vendor][itemKey] : undefined;
+
+                if (stockD1 !== undefined && stockD2 !== undefined) {
+                    if (currentInputValue === stockD1 && currentInputValue === stockD2) {
+                        needsConfirmation = true;
+                        // 이미 다른 사유가 있다면 덧붙임
+                        reason = reason ? `${reason}, 3일간 재고 동일` : '⚠️ 3일간 재고값 동일';
+                    }
                 }
             }
             
@@ -493,7 +557,7 @@ async function checkOrderConfirmation() {
                 confirmItems[vendor].push({
                     ...item,
                     itemKey,
-                    currentStock,
+                    currentStock: currentInputValue, // 현재 입력값
                     orderAmount: displayQty,
                     displayUnit,
                     reason,
@@ -634,34 +698,24 @@ async function proceedToOrder() {
         });
     }
     
+    // [여기부터 수정] 
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
     const orderRecord = {
         date: todayStr,
         time: today.toTimeString().split(' ')[0].substring(0, 5),
         orders: orderData,
-        inventory: currentInventoryCopy  // 현재 재고 추가
+        inventory: currentInventoryCopy
     };
 
     try {
-        // 기존 발주 내역 조회
-        const existingResponse = await fetch(`${API_BASE}/api/inventory/orders?vendor=all`);
-        const existingData = await existingResponse.json();
+        // [변경] 기존 데이터를 조회(GET)해서 합치는 과정을 삭제하고,
+        // 새로 만든 orderRecord 하나만 서버로 전송합니다.
         
-        let allOrders = [];
-        if (existingData.success && existingData.orders) {
-            // 같은 날짜의 기록 제거 (최신 것만 유지)
-            allOrders = existingData.orders.filter(order => order.date !== todayStr);
-        }
-        
-        // 새 기록 추가
-        allOrders.push(orderRecord);
-        
-        // 전체 저장
         await fetch(`${API_BASE}/api/inventory/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orders: allOrders })
+            body: JSON.stringify(orderRecord) // { orders: [...] } 가 아니라 객체 자체를 보냄
         });
         
         showOrderModal(orderData);
@@ -1339,23 +1393,17 @@ async function saveItemChanges() {
 // ==========================================================
 // 어제 재고 로드 함수
 // ==========================================================
-async function loadYesterdayInventory() {
+async function loadRecentInventory() {
     try {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
-        
-        const response = await fetch(`${API_BASE}/api/inventory/history?period=1&vendor=all`);
+        // 3일치 비교를 위해 넉넉하게 최근 5일치 데이터를 가져옵니다.
+        const response = await fetch(`${API_BASE}/api/inventory/history?period=5&vendor=all`);
         const result = await response.json();
         
         if (result.success && result.history) {
-            const yesterdayRecord = result.history.find(r => r.date === yesterdayStr);
-            if (yesterdayRecord) {
-                yesterdayInventory = yesterdayRecord.inventory;
-            }
+            recentHistory = result.history; // 최신순으로 정렬되어 있음 (index 0: 가장 최근)
         }
     } catch (error) {
-        console.error('어제 재고 로드 실패:', error);
+        console.error('최근 재고 로드 실패:', error);
     }
 }
 
@@ -1468,4 +1516,15 @@ function filterNoOrderPeriod(days) {
     content.innerHTML = html;
 }
 
-
+// [NEW] 재고 값 강제 입력 (복사 버튼용)
+function setStockValue(itemKey, value) {
+    const input = document.getElementById(`current_${itemKey}`);
+    if (input) {
+        input.value = value;
+        // 시각적 피드백 (잠깐 깜빡임)
+        input.style.backgroundColor = '#e8f5e9';
+        setTimeout(() => {
+            input.style.backgroundColor = 'white';
+        }, 300);
+    }
+}

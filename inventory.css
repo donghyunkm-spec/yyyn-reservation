@@ -1138,3 +1138,349 @@ body {
         padding: 6px;
     }
 }
+
+/* --- [NEW] 전일 재고 복사 버튼 스타일 --- */
+.btn-copy-stock {
+    background: #e0e0e0;
+    color: #555;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 5px;
+    padding: 0;
+    transition: all 0.2s;
+}
+
+.btn-copy-stock:hover {
+    background: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}
+
+/* 모바일에서 터치하기 편하게 */
+@media (max-width: 480px) {
+    .btn-copy-stock {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* ==========================================================
+   [최종 개선 버전] 재고 입력 폼 스타일
+   - 단위 텍스트 제대로 표시
+   - 균형잡힌 레이아웃
+   ========================================================== */
+
+/* 그룹 박스 */
+.compact-group {
+    padding: 12px;
+    margin-bottom: 12px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-left: 4px solid #4CAF50;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+/* 헤더: 품목명 */
+.item-header-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #333;
+}
+.item-name {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* ✅ 컨트롤 영역 - 균형잡힌 배치 */
+.inventory-row-controls {
+    display: grid;
+    grid-template-columns: 1fr auto 2fr 1fr; /* 전일:버튼:입력:사용 = 1:auto:2:1 */
+    gap: 8px;
+    align-items: end;
+}
+
+/* 각 컬럼 (셀) 공통 스타일 */
+.control-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 라벨 스타일 */
+.cell-label {
+    font-size: 10px;
+    color: #666;
+    margin-bottom: 5px;
+    text-align: center;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* 공통 단위 스타일 */
+.unit {
+    font-size: 11px;
+    color: #999;
+    font-weight: normal;
+    margin-left: 3px;
+}
+
+/* ==========================================
+   1. 전일 재고 박스
+   ========================================== */
+.prev-cell {
+    justify-self: start; /* 왼쪽 정렬 */
+}
+
+.prev-value-box {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0 10px;
+    min-width: 60px;
+}
+
+.prev-value-box .value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #333;
+}
+
+/* ==========================================
+   2. 어제값 복사 버튼 (화살표)
+   ========================================== */
+.btn-cell {
+    justify-self: center;
+}
+
+.btn-same {
+    height: 36px;
+    width: 36px;
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-same:hover { 
+    background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+}
+
+.btn-same:active { 
+    transform: translateY(0);
+}
+
+.btn-same.disabled {
+    background: #e0e0e0;
+    color: #bbb;
+    cursor: not-allowed;
+}
+
+/* ==========================================
+   3. 현재 재고 입력칸 (가장 넓게)
+   ========================================== */
+.input-cell {
+    justify-self: center;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 0 10px;
+    height: 36px;
+    min-width: 80px;
+}
+
+.input-wrapper input {
+    width: 100%;
+    max-width: 80px;
+    height: 32px;
+    text-align: center;
+    border: none;
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    background: transparent;
+}
+
+.input-wrapper input:focus {
+    outline: none;
+}
+
+.input-wrapper:focus-within {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+/* ==========================================
+   4. 하루 사용량
+   ========================================== */
+.usage-cell {
+    justify-self: end; /* 오른쪽 정렬 */
+}
+
+.usage-wrapper {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0 10px;
+    min-width: 55px;
+}
+
+.usage-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+}
+
+/* ==========================================
+   모바일 최적화
+   ========================================== */
+@media (max-width: 450px) {
+    .compact-group { 
+        padding: 10px;
+    }
+    
+    .inventory-row-controls {
+        grid-template-columns: 1fr auto 1.8fr 1fr;
+        gap: 6px;
+    }
+    
+    .prev-value-box {
+        min-width: 55px;
+        padding: 0 8px;
+    }
+    
+    .prev-value-box .value {
+        font-size: 14px;
+    }
+    
+    .btn-same {
+        width: 34px;
+        height: 34px;
+        font-size: 16px;
+    }
+    
+    .input-wrapper {
+        min-width: 70px;
+        padding: 0 8px;
+    }
+    
+    .input-wrapper input {
+        max-width: 70px;
+        font-size: 15px;
+    }
+    
+    .usage-wrapper {
+        min-width: 50px;
+        padding: 0 8px;
+    }
+    
+    .cell-label {
+        font-size: 9px;
+    }
+    
+    .unit {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 380px) {
+    .inventory-row-controls {
+        grid-template-columns: 0.9fr auto 1.8fr 0.9fr;
+        gap: 5px;
+    }
+    
+    .prev-value-box {
+        min-width: 50px;
+        padding: 0 6px;
+    }
+    
+    .btn-same {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .input-wrapper {
+        min-width: 65px;
+    }
+    
+    .usage-wrapper {
+        min-width: 48px;
+    }
+}
+
+/* 초소형 화면 */
+@media (max-width: 340px) {
+    .inventory-row-controls {
+        gap: 4px;
+    }
+    
+    .unit {
+        display: none; /* 너무 좁으면 단위 숨김 */
+    }
+}
+
+/* ==========================================
+   하단 저장 버튼
+   ========================================== */
+button[type="submit"] {
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.2s;
+    box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
+}
+
+button[type="submit"]:hover {
+    background: linear-gradient(135deg, #45a049 0%, #388e3c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(76, 175, 80, 0.4);
+}
+
+button[type="submit"]:active {
+    transform: translateY(0);
+}
