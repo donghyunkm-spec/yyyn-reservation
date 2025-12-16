@@ -31,7 +31,8 @@
         <div class="tabs">
             <button class="tab active" onclick="showTab('inventory')">재고입력</button>
             <button class="tab" onclick="showTab('standard')">하루사용량</button>
-            <button class="tab" onclick="showTab('manageItems')">품목관리</button> <button class="tab" onclick="showTab('holidays')">휴일관리</button>
+            <button class="tab" onclick="showTab('manageItems')">품목관리</button>
+            <button class="tab" onclick="showTab('holidays')">휴일관리</button>
             <button class="tab" onclick="showTab('inventoryHistory')">재고내역</button>
             <button class="tab" onclick="showTab('orderHistory')">발주내역</button>
         </div>
@@ -40,10 +41,22 @@
             <div class="form-container">
                 <h2>📝 재고 입력</h2>
                 
-                <div class="vendor-quick-nav">
-                    <button class="vendor-nav-btn" onclick="scrollToVendor('삼시세끼')">삼시세끼</button>
-                    <button class="vendor-nav-btn" onclick="scrollToVendor('SPC')">SPC</button>
-                    <button class="vendor-nav-btn" onclick="scrollToVendor('기타')">기타</button>
+                <!-- 필터 및 미발주 품목 확인 버튼 -->
+                <div class="inventory-controls">
+                    <div class="vendor-quick-nav">
+                        <button class="vendor-nav-btn" onclick="scrollToVendor('삼시세끼')">삼시세끼</button>
+                        <button class="vendor-nav-btn" onclick="scrollToVendor('SPC')">SPC</button>
+                        <button class="vendor-nav-btn" onclick="scrollToVendor('기타')">기타</button>
+                    </div>
+                    
+                    <div class="filter-controls">
+                        <button class="filter-btn" id="sortOrderBtn" onclick="toggleSortOrder()">
+                            📅 발주일 오래된 순
+                        </button>
+                        <button class="filter-btn" onclick="showLongTermNoOrder()">
+                            ⚠️ 장기 미발주 품목
+                        </button>
+                    </div>
                 </div>
 
                 <div id="inventoryForm" class="inventory-form-unified"></div>
@@ -105,8 +118,7 @@
                     </select>
                 </div>
 
-                <div id="manageItemsList" class="manage-list">
-                    </div>
+                <div id="manageItemsList" class="manage-list"></div>
                 
                 <div class="form-actions">
                     <button onclick="saveItemChanges()" class="submit-btn">💾 변경사항 저장 (순서/삭제)</button>
@@ -172,11 +184,7 @@
             <div class="form-container">
                 <h2>📊 재고 내역</h2>
                 <div class="filter-group">
-                    <select id="invHistoryPeriod" onchange="loadInventoryHistory()">
-                        <option value="7">최근 7일</option>
-                        <option value="30" selected>최근 30일</option>
-                        <option value="90">최근 90일</option>
-                    </select>
+                    <input type="date" id="invHistoryDate" onchange="loadInventoryHistory()" style="padding: 10px; border: 2px solid #ddd; border-radius: 8px;">
                     <select id="invHistoryVendor" onchange="loadInventoryHistory()">
                         <option value="all">전체 업체</option>
                         <option value="삼시세끼">삼시세끼</option>
@@ -201,6 +209,24 @@
                     </select>
                 </div>
                 <div id="orderHistoryList" class="history-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 장기 미발주 품목 모달 -->
+    <div id="noOrderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚠️ 장기 미발주 품목</h2>
+                <button class="close-btn" onclick="closeNoOrderModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="period-selector">
+                    <button class="period-btn active" onclick="filterNoOrderPeriod(5)">5일 이상</button>
+                    <button class="period-btn" onclick="filterNoOrderPeriod(7)">7일 이상</button>
+                    <button class="period-btn" onclick="filterNoOrderPeriod(10)">10일 이상</button>
+                </div>
+                <div id="noOrderContent" class="no-order-list"></div>
             </div>
         </div>
     </div>
