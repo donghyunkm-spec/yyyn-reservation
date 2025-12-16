@@ -966,3 +966,85 @@ body {
         color: #555;
     }
 }
+
+/* inventory.css 추가/수정 */
+
+/* 1. 입력칸 텍스트 겹침 방지 및 디자인 개선 */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 8px 45px 8px 10px; /* 오른쪽 여백(45px)을 늘려 단위와 겹침 방지 */
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-align: right;
+    font-size: 16px;
+}
+
+.input-wrapper .unit-text {
+    position: absolute;
+    right: 12px;
+    font-size: 13px;
+    color: #888;
+    pointer-events: none; /* 클릭 시 입력창에 포커스 가도록 */
+}
+
+/* 2. 하루 사용량(Standard) 폼 - 한 줄 레이아웃 */
+.standard-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 10px;
+    border-bottom: 1px solid #eee;
+    background: white;
+}
+
+.standard-row:last-child {
+    border-bottom: none;
+}
+
+.standard-name {
+    flex: 1; /* 이름이 남은 공간 차지 */
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+    margin-right: 10px;
+    word-break: keep-all; /* 단어 중간 끊김 방지 */
+}
+
+.standard-input-area {
+    width: 120px; /* 입력 영역 고정 너비 */
+    flex-shrink: 0;
+}
+
+/* 모바일 화면 최적화 */
+@media (max-width: 480px) {
+    /* 재고 입력 폼 (2열 배치 유지) */
+    .item-inputs-inline {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 5px;
+    }
+
+    .input-inline {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .input-inline label {
+        font-size: 11px;
+        margin-bottom: 3px;
+        color: #666;
+    }
+
+    /* 하루 사용량 폼은 Flex(한 줄) 유지 */
+    .standard-row {
+        padding: 15px 5px;
+    }
+}
