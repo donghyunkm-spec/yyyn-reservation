@@ -7,6 +7,7 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
 // 데이터 파일 경로 (Railway Volume 사용)
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const RESERVATIONS_FILE = path.join(DATA_DIR, 'reservations.json');
@@ -17,6 +18,14 @@ const INVENTORY_ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
 const INVENTORY_HOLIDAYS_FILE = path.join(DATA_DIR, 'holidays.json');
 const INVENTORY_LAST_ORDERS_FILE = path.join(DATA_DIR, 'last_orders.json');
 const INVENTORY_HISTORY_FILE = path.join(DATA_DIR, 'inventory_history.json');
+
+// server.js 상단에 추가
+const axios = require('axios'); // [NEW] HTTP 요청용
+const KAKAO_TOKENS_FILE = path.join(DATA_DIR, 'kakao_tokens.json'); // [NEW] 토큰 저장 파일
+
+// [NEW] 카카오 REST API 키 (개발자 센터에서 복사한 키 입력!)
+const KAKAO_API_KEY = 'b93a072ab458557243baf45e12f2a011';
+
 
 // 데이터 디렉토리 생성
 if (!fs.existsSync(DATA_DIR)) {
@@ -572,23 +581,194 @@ app.get('/api/inventory/last-orders', (req, res) => {
     }
 });
 
-// 발주 저장
+// [NEW] 토큰 저장용 초기화
+if (!fs.existsSync(KAKAO_TOKENS_FILE)) {
+    fs.writeFileSync(KAKAO_TOKENS_FILE, JSON.stringify([], null, 2), 'utf8');
+}
+
+// ------------------------------------------
+// [NEW] 카카오 알림 관련 함수들
+// ------------------------------------------
+
+// 1. 토큰 저장/갱신 API
+app.post('/api/kakao-token', async (req, res) => {
+    try {
+        const { code, redirect_uri } = req.body;
+        
+        // 인가 코드로 토큰 발급 요청
+        const response = await axios.post('https://kauth.kakao.com/oauth/token', null, {
+            params: {
+                grant_type: 'authorization_code',
+                client_id: KAKAO_API_KEY,
+                redirect_uri: redirect_uri,
+                code: code
+            },
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
+
+        const { access_token, refresh_token } = response.data;
+        
+        // 기존 토큰 목록 로드
+        let tokens = [];
+        if (fs.existsSync(KAKAO_TOKENS_FILE)) {
+            tokens = JSON.parse(fs.readFileSync(KAKAO_TOKENS_FILE, 'utf8'));
+        }
+
+        // 새 토큰 추가 (중복 방지를 위해 기존 것과 비교하거나 그냥 추가)
+        // 편의상 3명이므로 그냥 계속 추가하고, 만료된건 나중에 처리
+        tokens.push({
+            access_token,
+            refresh_token,
+            updated_at: new Date().toISOString()
+        });
+
+        fs.writeFileSync(KAKAO_TOKENS_FILE, JSON.stringify(tokens, null, 2), 'utf8');
+        console.log('✅ 카카오 토큰 등록 완료');
+
+        res.json({ success: true, access_token });
+    } catch (error) {
+        console.error('토큰 발급 실패:', error.response ? error.response.data : error.message);
+        res.status(500).json({ success: false, error: '토큰 발급 실패' });
+    }
+});
+
+// 2. 카카오 메시지 전송 함수 (재귀적으로 토큰 갱신 처리)
+async function sendKakaoToAll(messageText) {
+    if (!fs.existsSync(KAKAO_TOKENS_FILE)) return;
+    let tokens = JSON.parse(fs.readFileSync(KAKAO_TOKENS_FILE, 'utf8'));
+    let updated = false;
+
+    for (let i = 0; i < tokens.length; i++) {
+        let userToken = tokens[i];
+        
+        try {
+            await axios.post('https://kapi.kakao.com/v2/api/talk/memo/default/send', {
+                template_object: JSON.stringify({
+                    object_type: 'text',
+                    text: messageText,
+                    link: {
+                        web_url: 'http://localhost:3000', // 가게 시스템 주소
+                        mobile_web_url: 'http://localhost:3000'
+                    },
+                    button_title: '재고 시스템 바로가기'
+                })
+            }, {
+                headers: { 
+                    'Authorization': `Bearer ${userToken.access_token}`,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+            console.log(`🔔 알림 전송 성공 (User ${i+1})`);
+        } catch (error) {
+            // 토큰 만료(401) 시 갱신 시도
+            if (error.response && error.response.status === 401 && userToken.refresh_token) {
+                console.log(`🔄 토큰 갱신 시도 (User ${i+1})`);
+                try {
+                    const refreshRes = await axios.post('https://kauth.kakao.com/oauth/token', null, {
+                        params: {
+                            grant_type: 'refresh_token',
+                            client_id: KAKAO_API_KEY,
+                            refresh_token: userToken.refresh_token
+                        },
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                    });
+                    
+                    // 토큰 업데이트
+                    tokens[i].access_token = refreshRes.data.access_token;
+                    if (refreshRes.data.refresh_token) {
+                        tokens[i].refresh_token = refreshRes.data.refresh_token;
+                    }
+                    updated = true;
+                    
+                    // 갱신된 토큰으로 재전송 (재귀 호출 대신 1회 재시도)
+                    await axios.post('https://kapi.kakao.com/v2/api/talk/memo/default/send', {
+                         template_object: JSON.stringify({
+                            object_type: 'text',
+                            text: messageText,
+                            link: { web_url: '', mobile_web_url: '' }
+                        })
+                    }, {
+                        headers: { 'Authorization': `Bearer ${tokens[i].access_token}` }
+                    });
+                    console.log(`🔔 갱신 후 알림 전송 성공 (User ${i+1})`);
+
+                } catch (refreshErr) {
+                    console.error('토큰 갱신 실패, 해당 유저 스킵');
+                }
+            } else {
+                console.error(`알림 전송 실패 (User ${i+1}):`, error.message);
+            }
+        }
+    }
+
+    if (updated) {
+        fs.writeFileSync(KAKAO_TOKENS_FILE, JSON.stringify(tokens, null, 2), 'utf8');
+    }
+}
+
+// 3. 메시지 내용 생성 함수
+function createAlertMessage(orderData, warnings) {
+    const today = new Date();
+    const dateStr = `${today.getMonth() + 1}/${today.getDate()} ${today.getHours()}:${today.getMinutes()}`;
+    
+    let msg = `[양은이네 발주 알림]\n📅 ${dateStr}\n\n`;
+    let hasIssues = false;
+
+    // 경고(특이사항) 먼저 표시
+    if (warnings && Object.keys(warnings).length > 0) {
+        for (const vendor in warnings) {
+            const items = warnings[vendor];
+            if (items.length > 0) {
+                hasIssues = true;
+                msg += `🚨 ${vendor} 확인필요\n`;
+                items.forEach(item => {
+                    msg += `- ${item.품목명}: ${item.reason}\n`;
+                });
+                msg += `------------------\n`;
+            }
+        }
+    }
+
+    if (!hasIssues) {
+        msg += "✅ 특이사항 없이 발주되었습니다.\n\n";
+    }
+
+    // 전체 발주 요약
+    msg += "📋 발주 내역 요약\n";
+    for (const vendor in orderData.orders) {
+        const items = orderData.orders[vendor];
+        if (items.length > 0) {
+            msg += `[${vendor}] ${items.length}개 품목\n`;
+            // 너무 길어지지 않게 주요 품목만 나열하거나 생략
+            items.slice(0, 3).forEach(item => {
+                msg += `· ${item.품목명} ${item.orderAmount}${item.displayUnit || item.발주단위}\n`;
+            });
+            if(items.length > 3) msg += `  외 ${items.length - 3}건...\n`;
+        }
+    }
+
+    return msg;
+}
+
+// 발주 저장 API (카카오 알림 기능 추가됨)
 app.post('/api/inventory/orders', (req, res) => {
     try {
+        // 프론트엔드에서 { ...기존데이터, warnings: {...} } 형태로 보냈으므로
+        // orderRecord 안에 warnings도 들어있습니다.
         const orderRecord = req.body;
         
-        // 기존 발주 내역 로드
+        // 1. 기존 발주 내역 로드 및 저장 로직 (기존과 동일)
         let orders = [];
         if (fs.existsSync(INVENTORY_ORDERS_FILE)) {
             const data = fs.readFileSync(INVENTORY_ORDERS_FILE, 'utf8');
             orders = JSON.parse(data);
         }
         
-        // 새 발주 추가
+        // 새 발주 추가 (JSON 파일에도 warnings 내용이 같이 저장됩니다. 기록용으로 좋습니다.)
         orders.push(orderRecord);
         fs.writeFileSync(INVENTORY_ORDERS_FILE, JSON.stringify(orders, null, 2), 'utf8');
         
-        // 마지막 발주일 업데이트
+        // 2. 마지막 발주일 업데이트 로직 (기존과 동일)
         let lastOrders = {};
         if (fs.existsSync(INVENTORY_LAST_ORDERS_FILE)) {
             const data = fs.readFileSync(INVENTORY_LAST_ORDERS_FILE, 'utf8');
@@ -605,8 +785,25 @@ app.post('/api/inventory/orders', (req, res) => {
         
         fs.writeFileSync(INVENTORY_LAST_ORDERS_FILE, JSON.stringify(lastOrders, null, 2), 'utf8');
         
-        console.log(`📦 발주 저장: ${orderRecord.date}`);
+        // ---------------------------------------------------------
+        // [NEW] 카카오톡 알림 발송 로직 (여기가 추가된 부분입니다)
+        // ---------------------------------------------------------
+        
+        // orderRecord 안에 들어있는 warnings(특이사항) 정보를 꺼냅니다.
+        const warnings = orderRecord.warnings || {};
+        
+        // 메시지 문구를 생성합니다.
+        const alertMsg = createAlertMessage(orderRecord, warnings);
+        
+        // 카카오톡 전송 함수 호출 
+        // (await를 쓰지 않아, 알림 전송이 늦어져도 웹 화면이 멈추지 않게 합니다)
+        sendKakaoToAll(alertMsg).catch(err => {
+            console.error('카톡 전송 중 에러 발생(백그라운드):', err.message);
+        });
+
+        console.log(`📦 발주 저장 및 알림 요청 완료: ${orderRecord.date}`);
         res.json({ success: true });
+
     } catch (error) {
         console.error('발주 저장 오류:', error);
         res.status(500).json({ success: false, error: '발주 저장 실패' });

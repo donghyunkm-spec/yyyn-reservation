@@ -14,12 +14,14 @@ let holidays = {
 let lastOrderDates = {};
 let recentHistory = []; // (변경) 어제 재고 -> 최근 재고 리스트로 변경
 
+
 // ==========================================================
 // 추가된 전역 변수
 // ==========================================================
 let yesterdayInventory = {}; // 어제 재고
 let currentSortOrder = 'default'; // 정렬 순서: 'default' 또는 'lastOrder'
 let allItemsWithInfo = []; // 정렬용 전체 품목 리스트
+let currentWarnings = {}; // [NEW] 발주 확인 사유 저장용
 
 
 const API_BASE = '';
@@ -568,8 +570,16 @@ async function checkOrderConfirmation() {
     }
     
     const hasConfirmItems = Object.values(confirmItems).some(arr => arr.length > 0);
-    if (hasConfirmItems) showConfirmModal(confirmItems);
-    else proceedToOrder();
+
+    // [NEW] 확인 모달에 띄운 데이터를 전역 변수에 저장 (서버 전송용)
+    currentWarnings = {};
+    if (hasConfirmItems) {
+        // 깊은 복사로 저장
+        currentWarnings = JSON.parse(JSON.stringify(confirmItems));
+        showConfirmModal(confirmItems);
+    } else {
+        proceedToOrder();
+    }
 }
 
 // 발주 확인 모달 표시 (테이블 형태)
@@ -709,14 +719,20 @@ async function proceedToOrder() {
     };
 
     try {
-        // [변경] 기존 데이터를 조회(GET)해서 합치는 과정을 삭제하고,
-        // 새로 만든 orderRecord 하나만 서버로 전송합니다.
-        
+        // [수정] 서버로 보낼 데이터에 warnings 추가
+        const payload = {
+            ...orderRecord,
+            warnings: currentWarnings // 모달에 떴던 그 경고 내용들
+        };
+
         await fetch(`${API_BASE}/api/inventory/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderRecord) // { orders: [...] } 가 아니라 객체 자체를 보냄
+            body: JSON.stringify(payload) // 수정된 payload 전송
         });
+        
+        // 발주 후 경고 초기화
+        currentWarnings = {}; 
         
         showOrderModal(orderData);
     } catch (error) {
