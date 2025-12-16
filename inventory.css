@@ -1,4 +1,4 @@
-/* 재고관리 시스템 스타일 (최종 버전) */
+/* 재고관리 시스템 스타일 (Cleaned Version) */
 * {
     margin: 0;
     padding: 0;
@@ -17,7 +17,7 @@ body {
     margin: 0 auto;
 }
 
-/* 로그인 화면 */
+/* --- 로그인 화면 --- */
 .login-screen {
     min-height: 100vh;
     display: flex;
@@ -73,7 +73,7 @@ body {
     box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
 }
 
-/* 헤더 */
+/* --- 헤더 및 네비게이션 --- */
 .header {
     text-align: center;
     margin-bottom: 20px;
@@ -109,7 +109,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* 상태 바 */
+/* --- 상태 바 --- */
 .status-bar {
     display: flex;
     justify-content: space-between;
@@ -146,7 +146,7 @@ body {
     background: #d32f2f;
 }
 
-/* 탭 */
+/* --- 탭 메뉴 --- */
 .tabs {
     display: flex;
     margin-bottom: 20px;
@@ -188,7 +188,7 @@ body {
     display: block;
 }
 
-/* 폼 컨테이너 */
+/* --- 공통 폼 컨테이너 --- */
 .form-container {
     background: white;
     padding: 20px;
@@ -209,7 +209,6 @@ body {
     font-size: clamp(1.1em, 3vw, 1.4em);
 }
 
-/* 정보 박스 */
 .info-box {
     background: #e3f2fd;
     padding: 15px;
@@ -224,7 +223,7 @@ body {
     font-size: 14px;
 }
 
-/* 업체 빠른 이동 버튼 */
+/* --- 버튼 그룹 --- */
 .vendor-quick-nav {
     display: flex;
     gap: 10px;
@@ -257,7 +256,6 @@ body {
     transform: translateY(-2px);
 }
 
-/* 업체 선택 버튼 */
 .vendor-selector {
     display: flex;
     gap: 10px;
@@ -289,8 +287,8 @@ body {
     border-color: #388E3C;
 }
 
-/* 통합 재고 입력 폼 */
-.inventory-form-unified {
+/* --- 재고 입력 폼 스타일 --- */
+.inventory-form-unified, .inventory-form {
     max-height: 70vh;
     overflow-y: auto;
     padding: 10px 0;
@@ -299,15 +297,6 @@ body {
 .vendor-section {
     margin-bottom: 30px;
     scroll-margin-top: 80px;
-}
-
-/* ✅ 업체 헤더 제거됨 */
-
-/* 재고 입력 폼 */
-.inventory-form {
-    max-height: 60vh;
-    overflow-y: auto;
-    padding: 10px 0;
 }
 
 .item-group {
@@ -339,22 +328,11 @@ body {
     font-weight: bold;
 }
 
-.importance-상 {
-    background: #ffebee;
-    color: #c62828;
-}
+.importance-상 { background: #ffebee; color: #c62828; }
+.importance-중 { background: #fff3e0; color: #ef6c00; }
+.importance-하 { background: #e8f5e9; color: #2e7d32; }
 
-.importance-중 {
-    background: #fff3e0;
-    color: #ef6c00;
-}
-
-.importance-하 {
-    background: #e8f5e9;
-    color: #2e7d32;
-}
-
-/* ✅ 개선: 1줄 배치 - 크기 축소 */
+/* 재고 입력 - 레이아웃 및 인풋 */
 .item-inputs-inline {
     display: flex;
     gap: 6px;
@@ -375,28 +353,67 @@ body {
     white-space: nowrap;
 }
 
-.input-inline input {
-    flex: 1;
-    padding: 6px 4px;
-    border: 2px solid #ddd;
-    border-radius: 5px;
-    font-size: 14px;
-    text-align: center;
-    min-width: 0;
+/* ✅ 인풋 래퍼: 단위 겹침 방지 및 위치 조정 */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
 }
 
-.input-inline input:focus {
+.input-wrapper input {
+    width: 100%;
+    /* 오른쪽 패딩을 45px로 늘려 단위와 겹치지 않게 함 */
+    padding: 8px 45px 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-align: right;
+    font-size: 16px;
+}
+
+.input-wrapper input:focus {
     outline: none;
     border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
 }
 
-.input-inline .unit-text {
-    font-size: 11px;
-    color: #999;
-    min-width: 30px;
+.input-wrapper .unit-text {
+    position: absolute;
+    right: 12px;
+    font-size: 13px;
+    color: #888;
+    pointer-events: none;
 }
 
-/* 폼 액션 */
+/* --- 하루 사용량(Standard) 폼: 한 줄 레이아웃 --- */
+.standard-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 10px;
+    border-bottom: 1px solid #eee;
+    background: white;
+}
+
+.standard-row:last-child {
+    border-bottom: none;
+}
+
+.standard-name {
+    flex: 1;
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+    margin-right: 10px;
+    word-break: keep-all;
+}
+
+.standard-input-area {
+    width: 120px;
+    flex-shrink: 0;
+}
+
+/* --- 하단 액션 버튼 --- */
 .form-actions {
     margin-top: 20px;
     position: sticky;
@@ -425,16 +442,14 @@ body {
     box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
 }
 
-/* 휴일 관리 */
+/* --- 휴일 관리 --- */
 .holiday-section {
     margin-bottom: 30px;
     padding-bottom: 30px;
     border-bottom: 2px solid #e9ecef;
 }
 
-.holiday-section:last-child {
-    border-bottom: none;
-}
+.holiday-section:last-child { border-bottom: none; }
 
 .holiday-info {
     background: #e3f2fd;
@@ -444,27 +459,12 @@ body {
     border-left: 4px solid #2196F3;
 }
 
-.holiday-info p {
-    margin-bottom: 5px;
-    color: #1565c0;
-    font-size: 14px;
-}
+.holiday-info p { margin-bottom: 5px; color: #1565c0; font-size: 14px; }
 
-.form-group {
-    margin-bottom: 20px;
-}
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
 
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #333;
-}
-
-.holiday-list {
-    margin-top: 15px;
-}
-
+.holiday-list { margin-top: 15px; }
 .holiday-item {
     display: flex;
     justify-content: space-between;
@@ -474,11 +474,7 @@ body {
     border-radius: 8px;
     margin-bottom: 10px;
 }
-
-.holiday-date {
-    font-weight: bold;
-    color: #333;
-}
+.holiday-date { font-weight: bold; color: #333; }
 
 .btn-danger {
     padding: 6px 12px;
@@ -489,12 +485,9 @@ body {
     cursor: pointer;
     font-size: 14px;
 }
+.btn-danger:hover { background: #d32f2f; }
 
-.btn-danger:hover {
-    background: #d32f2f;
-}
-
-/* 필터 그룹 */
+/* --- 필터 및 내역 리스트 --- */
 .filter-group {
     display: flex;
     gap: 10px;
@@ -509,369 +502,7 @@ body {
     font-size: 16px;
 }
 
-/* 발주/재고 내역 */
-.history-list {
-    margin-top: 20px;
-}
-
-.history-item {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    border-left: 4px solid #4CAF50;
-}
-
-.history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.history-date {
-    font-weight: bold;
-    color: #333;
-}
-
-.history-vendor {
-    padding: 4px 10px;
-    background: #4CAF50;
-    color: white;
-    border-radius: 12px;
-    font-size: 14px;
-}
-
-.history-items {
-    font-size: 14px;
-    color: #666;
-    line-height: 1.6;
-}
-
-/* 모달 */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    overflow-y: auto;
-}
-
-.modal.active {
-    display: flex;
-}
-
-.modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    max-width: 600px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-}
-
-.modal-large {
-    max-width: 900px;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.modal-header h2 {
-    color: #333;
-    margin: 0;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 30px;
-    cursor: pointer;
-    color: #999;
-    padding: 0;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-    background: #f8f9fa;
-    color: #333;
-}
-
-.confirm-content {
-    margin-bottom: 20px;
-}
-
-/* 배송 정보 박스 */
-.delivery-info-box {
-    background: #e3f2fd;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    border-left: 4px solid #2196F3;
-}
-
-.delivery-info-box h3 {
-    color: #1565c0;
-    font-size: 16px;
-    margin-bottom: 10px;
-}
-
-.delivery-info-box p {
-    color: #1565c0;
-    font-size: 14px;
-    margin: 5px 0;
-}
-
-/* ✅ 개선: 발주확인 - 테이블 테두리 강조 */
-.confirm-table-wrapper {
-    overflow-x: auto;
-    margin-bottom: 20px;
-}
-
-.confirm-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-    border: 2px solid #000;
-}
-
-.confirm-table thead {
-    background: #f8f9fa;
-}
-
-.confirm-table th {
-    padding: 12px 8px;
-    text-align: left;
-    font-weight: bold;
-    border: 1px solid #000;
-    color: #333;
-}
-
-.confirm-table td {
-    padding: 10px 8px;
-    border: 1px solid #000;
-}
-
-.confirm-table tbody tr:hover {
-    background: #f8f9fa;
-}
-
-.order-content {
-    margin-bottom: 20px;
-}
-
-.order-section {
-    margin-bottom: 20px;
-}
-
-.order-section h3 {
-    color: #4CAF50;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
-    border-bottom: 2px solid #4CAF50;
-}
-
-.order-items {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    font-family: monospace;
-    font-size: 14px;
-    line-height: 1.8;
-    white-space: pre-wrap;
-}
-
-.modal-footer {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.btn-primary {
-    flex: 1;
-    padding: 12px;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-    background: #45a049;
-    transform: translateY(-2px);
-}
-
-.btn-secondary {
-    flex: 1;
-    padding: 12px;
-    background: #f8f9fa;
-    color: #333;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-secondary:hover {
-    background: #e9ecef;
-}
-
-.btn-kakao {
-    flex: 1;
-    padding: 12px;
-    background: #FEE500;
-    color: #3C1E1E;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-kakao:hover {
-    background: #FDD835;
-    transform: translateY(-2px);
-}
-
-/* 알림 */
-#alertContainer {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10000;
-}
-
-.alert {
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    font-weight: bold;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    animation: slideIn 0.3s ease;
-    min-width: 250px;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-.alert.success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.alert.error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-.alert.info {
-    background: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
-}
-
-/* 반응형 */
-@media (max-width: 768px) {
-    .container {
-        padding: 0;
-    }
-
-    .form-container {
-        border-radius: 10px;
-    }
-
-    .vendor-selector {
-        flex-direction: column;
-    }
-
-    .vendor-btn {
-        width: 100%;
-    }
-
-    .filter-group {
-        flex-direction: column;
-    }
-
-    .modal-footer {
-        flex-direction: column;
-    }
-    
-    .confirm-table {
-        font-size: 12px;
-    }
-    
-    .confirm-table th,
-    .confirm-table td {
-        padding: 8px 4px;
-    }
-}
-
-@media (max-width: 480px) {
-    body {
-        padding: 5px;
-    }
-
-    .header h1 {
-        font-size: 1.5em;
-    }
-
-    .login-container {
-        padding: 30px 20px;
-    }
-    
-    .tabs {
-        font-size: 11px;
-    }
-    
-    .tab {
-        padding: 12px 5px;
-        min-width: 70px;
-    }
-    
-    .vendor-quick-nav {
-        flex-direction: column;
-    }
-}
-
-/* inventory.css 수정 및 추가 */
-
-/* 재고 내역(History) 스타일 개선 - 카드 형태 */
+/* 내역 카드 스타일 (개선됨) */
 .history-list {
     display: flex;
     flex-direction: column;
@@ -905,7 +536,6 @@ body {
     font-weight: bold;
 }
 
-/* 테이블 형태의 내역 아이템 */
 .history-table {
     width: 100%;
     border-collapse: collapse;
@@ -923,20 +553,139 @@ body {
     color: #333;
 }
 
-/* 모바일 화면 최적화 (가로 스크롤 방지) */
+/* --- 모달 --- */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.modal-large { max-width: 900px; }
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.modal-header h2 { color: #333; margin: 0; }
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 30px;
+    cursor: pointer;
+    color: #999;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+.close-btn:hover { background: #f8f9fa; color: #333; }
+
+.delivery-info-box {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #2196F3;
+}
+.delivery-info-box h3, .delivery-info-box p { color: #1565c0; margin-bottom: 5px; }
+
+.confirm-table-wrapper { overflow-x: auto; margin-bottom: 20px; }
+.confirm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    border: 2px solid #000;
+}
+.confirm-table thead { background: #f8f9fa; }
+.confirm-table th { padding: 12px 8px; text-align: left; font-weight: bold; border: 1px solid #000; color: #333; }
+.confirm-table td { padding: 10px 8px; border: 1px solid #000; }
+
+.order-items {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+}
+
+.modal-footer { display: flex; gap: 10px; margin-top: 20px; }
+.btn-primary, .btn-secondary, .btn-kakao {
+    flex: 1; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; border: none;
+}
+.btn-primary { background: #4CAF50; color: white; }
+.btn-secondary { background: #f8f9fa; color: #333; border: 2px solid #ddd; }
+.btn-kakao { background: #FEE500; color: #3C1E1E; }
+
+/* --- 알림 --- */
+#alertContainer { position: fixed; top: 20px; right: 20px; z-index: 10000; }
+.alert {
+    padding: 15px 20px; border-radius: 8px; margin-bottom: 10px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); animation: slideIn 0.3s ease; min-width: 250px;
+}
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.alert.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.alert.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.alert.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+/* --- 미디어 쿼리 (반응형 통합) --- */
+@media (max-width: 768px) {
+    .container { padding: 0; }
+    .form-container { border-radius: 10px; }
+    .vendor-selector { flex-direction: column; }
+    .vendor-btn { width: 100%; }
+    .filter-group, .modal-footer { flex-direction: column; }
+    .confirm-table { font-size: 12px; }
+    .confirm-table th, .confirm-table td { padding: 8px 4px; }
+}
+
 @media (max-width: 480px) {
-    /* 입력창 2개 나란히 (5:5 비율 고정) */
+    body { padding: 5px; }
+    .header h1 { font-size: 1.5em; }
+    .login-container { padding: 30px 20px; }
+    .tabs { font-size: 11px; }
+    .tab { padding: 12px 5px; min-width: 70px; }
+    .vendor-quick-nav { flex-direction: column; }
+
+    /* ✅ 모바일 재고 입력 폼: Grid 레이아웃 (반반 배치) */
     .item-inputs-inline {
         display: grid;
-        grid-template-columns: 1fr 1fr; /* 정확히 반반 */
+        grid-template-columns: 1fr 1fr;
         gap: 10px;
         margin-top: 8px;
     }
 
     .input-inline {
-        flex-direction: column; /* 라벨을 위로 */
+        flex-direction: column; /* 라벨 위로 */
         align-items: flex-start;
-        position: relative;
     }
 
     .input-inline label {
@@ -945,105 +694,13 @@ body {
         color: #666;
     }
 
-    .input-inline input {
-        width: 100%; /* 꽉 채우기 */
-        text-align: right;
-        padding-right: 35px; /* 단위 텍스트 공간 확보 */
-    }
-
-    /* 단위(kg, box) 텍스트 위치 조정 */
-    .input-inline .unit-text {
-        position: absolute;
+    .input-wrapper .unit-text {
+        bottom: 10px; /* 인풋 높이에 맞춰 하단 정렬 보정 */
         right: 10px;
-        bottom: 10px; /* input 높이에 맞춰 조정 */
-        font-size: 12px;
-        color: #999;
+        top: auto;
     }
     
-    /* 하루사용량 읽기전용 인풋 스타일 */
-    .input-inline input[readonly] {
-        background-color: #f5f5f5;
-        color: #555;
-    }
-}
-
-/* inventory.css 추가/수정 */
-
-/* 1. 입력칸 텍스트 겹침 방지 및 디자인 개선 */
-.input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
-.input-wrapper input {
-    width: 100%;
-    padding: 8px 45px 8px 10px; /* 오른쪽 여백(45px)을 늘려 단위와 겹침 방지 */
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    text-align: right;
-    font-size: 16px;
-}
-
-.input-wrapper .unit-text {
-    position: absolute;
-    right: 12px;
-    font-size: 13px;
-    color: #888;
-    pointer-events: none; /* 클릭 시 입력창에 포커스 가도록 */
-}
-
-/* 2. 하루 사용량(Standard) 폼 - 한 줄 레이아웃 */
-.standard-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 10px;
-    border-bottom: 1px solid #eee;
-    background: white;
-}
-
-.standard-row:last-child {
-    border-bottom: none;
-}
-
-.standard-name {
-    flex: 1; /* 이름이 남은 공간 차지 */
-    font-weight: bold;
-    font-size: 14px;
-    color: #333;
-    margin-right: 10px;
-    word-break: keep-all; /* 단어 중간 끊김 방지 */
-}
-
-.standard-input-area {
-    width: 120px; /* 입력 영역 고정 너비 */
-    flex-shrink: 0;
-}
-
-/* 모바일 화면 최적화 */
-@media (max-width: 480px) {
-    /* 재고 입력 폼 (2열 배치 유지) */
-    .item-inputs-inline {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        margin-top: 5px;
-    }
-
-    .input-inline {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .input-inline label {
-        font-size: 11px;
-        margin-bottom: 3px;
-        color: #666;
-    }
-
-    /* 하루 사용량 폼은 Flex(한 줄) 유지 */
+    /* 하루 사용량 리스트: 여백 조정 */
     .standard-row {
         padding: 15px 5px;
     }
