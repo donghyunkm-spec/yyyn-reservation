@@ -46,15 +46,15 @@
             <div class="form-container">
                 <h2>📝 재고 입력</h2>
                 
-                <!-- 업체 선택 -->
-                <div class="vendor-selector">
-                    <button class="vendor-btn active" data-vendor="삼시세끼" onclick="selectVendor('삼시세끼')">삼시세끼</button>
-                    <button class="vendor-btn" data-vendor="SPC" onclick="selectVendor('SPC')">SPC</button>
-                    <button class="vendor-btn" data-vendor="기타" onclick="selectVendor('기타')">기타</button>
+                <!-- 업체 빠른 이동 버튼 -->
+                <div class="vendor-quick-nav">
+                    <button class="vendor-nav-btn" onclick="scrollToVendor('삼시세끼')">삼시세끼</button>
+                    <button class="vendor-nav-btn" onclick="scrollToVendor('SPC')">SPC</button>
+                    <button class="vendor-nav-btn" onclick="scrollToVendor('기타')">기타</button>
                 </div>
 
-                <!-- 재고 입력 폼 -->
-                <div id="inventoryForm" class="inventory-form">
+                <!-- 재고 입력 폼 (전체 업체 통합) -->
+                <div id="inventoryForm" class="inventory-form-unified">
                     <!-- 동적으로 생성됨 -->
                 </div>
 
@@ -219,7 +219,7 @@
 
     <!-- 발주 확인 모달 -->
     <div id="confirmModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2>⚠️ 발주 확인 필요</h2>
                 <button class="close-btn" onclick="closeConfirmModal()">×</button>

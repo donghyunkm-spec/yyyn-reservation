@@ -1,11 +1,10 @@
-// 재고관리 시스템 - 프론트엔드 로직 (개선 버전)
+// 재고관리 시스템 - 프론트엔드 로직 (최종 개선 버전)
 
 // 전역 변수
-let currentVendor = '삼시세끼';
 let currentStandardVendor = '삼시세끼';
 let items = {};
 let inventory = {};
-let dailyUsage = {}; // 하루 사용량 (기존 standardInventory 대체)
+let dailyUsage = {};
 let holidays = {
     'store': [],
     '삼시세끼': [],
@@ -15,7 +14,7 @@ let holidays = {
 let lastOrderDates = {};
 
 const API_BASE = '';
-const PASSWORD = '1234'; // 실제 운영시 변경 필요
+const PASSWORD = '1234';
 
 // 요일 한글 변환
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -59,7 +58,7 @@ async function showMainScreen() {
     document.getElementById('mainScreen').style.display = 'block';
     
     await loadData();
-    renderInventoryForm();
+    renderUnifiedInventoryForm();
     renderStandardForm();
     loadHolidays();
 }
@@ -114,7 +113,7 @@ function showTab(tabName) {
     document.getElementById(`${tabName}-tab`).classList.add('active');
     
     if (tabName === 'inventory') {
-        renderInventoryForm();
+        renderUnifiedInventoryForm();
     } else if (tabName === 'standard') {
         renderStandardForm();
     } else if (tabName === 'holidays') {
@@ -126,14 +125,102 @@ function showTab(tabName) {
     }
 }
 
-// 업체 선택 (재고입력)
-function selectVendor(vendor) {
-    currentVendor = vendor;
-    document.querySelectorAll('#inventory-tab .vendor-btn').forEach(btn => {
-        btn.classList.remove('active');
+// ✅ 새로운 함수: 업체 섹션으로 스크롤
+function scrollToVendor(vendor) {
+    const section = document.getElementById(`vendor-section-${vendor}`);
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// ✅ 개선: 통합 재고 입력 폼 렌더링 (모든 업체 한 화면)
+function renderUnifiedInventoryForm() {
+    const formContainer = document.getElementById('inventoryForm');
+    if (!formContainer) return;
+    
+    let html = '';
+    
+    const vendorOrder = ['삼시세끼', 'SPC', '기타'];
+    
+    vendorOrder.forEach(vendor => {
+        const vendorItems = items[vendor] || [];
+        if (vendorItems.length === 0) return;
+        
+        html += `
+            <div class="vendor-section" id="vendor-section-${vendor}">
+                <div class="vendor-section-header">📦 ${vendor}</div>
+        `;
+        
+        vendorItems.forEach(item => {
+            const itemKey = `${vendor}_${item.품목명}`;
+            const currentStock = inventory[itemKey] || 0;
+            const usage = dailyUsage[itemKey] || 0;
+            
+            // ✅ SPC 품목 단위 변환 (box → kg)
+            let displayUnit = item.발주단위;
+            if (vendor === 'SPC') {
+                displayUnit = getDisplayUnit(item.발주단위, item.품목명);
+            }
+            
+            html += `
+                <div class="item-group">
+                    <div class="item-header">
+                        <span class="item-name">${item.품목명}</span>
+                        ${item.중요도 ? `<span class="item-importance importance-${item.중요도}">${item.중요도}</span>` : ''}
+                    </div>
+                    <div class="item-inputs-inline">
+                        <div class="input-inline">
+                            <label>현재재고</label>
+                            <input type="number" 
+                                   id="current_${itemKey}" 
+                                   value="${currentStock}" 
+                                   min="0" 
+                                   ${vendor === 'SPC' ? 'step="1"' : 'step="0.1"'}
+                                   inputmode="${vendor === 'SPC' ? 'numeric' : 'decimal'}"
+                                   onchange="validateSPCInput('${vendor}', this)">
+                            <span class="unit-text">${displayUnit}</span>
+                        </div>
+                        <div class="input-inline">
+                            <label>하루사용량</label>
+                            <input type="text" 
+                                   value="${usage} ${displayUnit}" 
+                                   readonly 
+                                   style="background: #f8f9fa; border-color: #e9ecef;">
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `</div>`;
     });
-    event.target.classList.add('active');
-    renderInventoryForm();
+    
+    if (!html) {
+        html = '<p style="text-align: center; color: #999; padding: 30px;">품목이 없습니다.</p>';
+    }
+    
+    formContainer.innerHTML = html;
+}
+
+// ✅ SPC 품목 단위 표시 변환
+function getDisplayUnit(unit, itemName) {
+    // "삼겹살(양은이네/20kg/냉동/수입산)" → "20kg"
+    const match = itemName.match(/\/(\d+kg)\//);
+    if (match) {
+        return match[1];
+    }
+    return 'kg';
+}
+
+// ✅ SPC 입력값 검증 (소수점 방지)
+function validateSPCInput(vendor, inputElement) {
+    if (vendor === 'SPC') {
+        const value = parseFloat(inputElement.value);
+        if (!Number.isInteger(value)) {
+            showAlert('SPC 제품은 정수만 입력 가능합니다.', 'error');
+            inputElement.value = Math.round(value);
+        }
+    }
 }
 
 // 업체 선택 (하루사용량)
@@ -144,56 +231,6 @@ function selectStandardVendor(vendor) {
     });
     event.target.classList.add('active');
     renderStandardForm();
-}
-
-// 재고 입력 폼 렌더링
-function renderInventoryForm() {
-    const formContainer = document.getElementById('inventoryForm');
-    if (!formContainer) return;
-    
-    const vendorItems = items[currentVendor] || [];
-    
-    if (vendorItems.length === 0) {
-        formContainer.innerHTML = '<p style="text-align: center; color: #999; padding: 30px;">품목이 없습니다.</p>';
-        return;
-    }
-    
-    let html = '';
-    vendorItems.forEach(item => {
-        const itemKey = `${currentVendor}_${item.품목명}`;
-        const currentStock = inventory[itemKey] || 0;
-        const usage = dailyUsage[itemKey] || 0;
-        
-        html += `
-            <div class="item-group">
-                <div class="item-header">
-                    <span class="item-name">${item.품목명}</span>
-                    ${item.중요도 ? `<span class="item-importance importance-${item.중요도}">${item.중요도}</span>` : ''}
-                </div>
-                <div class="item-inputs">
-                    <div class="input-group">
-                        <label>현재 재고</label>
-                        <input type="number" 
-                               id="current_${itemKey}" 
-                               value="${currentStock}" 
-                               min="0" 
-                               step="0.1"
-                               inputmode="decimal">
-                        <div class="unit-display">${item.발주단위}</div>
-                    </div>
-                    <div class="input-group">
-                        <label>하루 사용량</label>
-                        <input type="text" 
-                               value="${usage} ${item.발주단위}" 
-                               readonly 
-                               style="background: #f8f9fa;">
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    
-    formContainer.innerHTML = html;
 }
 
 // 하루 사용량 설정 폼 렌더링
@@ -213,6 +250,12 @@ function renderStandardForm() {
         const itemKey = `${currentStandardVendor}_${item.품목명}`;
         const usage = dailyUsage[itemKey] || 0;
         
+        // SPC 단위 변환
+        let displayUnit = item.발주단위;
+        if (currentStandardVendor === 'SPC') {
+            displayUnit = getDisplayUnit(item.발주단위, item.품목명);
+        }
+        
         html += `
             <div class="item-group">
                 <div class="item-header">
@@ -226,9 +269,9 @@ function renderStandardForm() {
                                id="usage_${itemKey}" 
                                value="${usage}" 
                                min="0" 
-                               step="0.1"
-                               inputmode="decimal">
-                        <div class="unit-display">${item.발주단위}</div>
+                               ${currentStandardVendor === 'SPC' ? 'step="1"' : 'step="0.1"'}
+                               inputmode="${currentStandardVendor === 'SPC' ? 'numeric' : 'decimal'}">
+                        <div class="unit-display">${displayUnit}</div>
                     </div>
                 </div>
             </div>
@@ -279,7 +322,7 @@ async function saveInventory() {
     }
 }
 
-// ✅ 개선된 함수: 다음 배송일까지 필요한 일수 계산
+// 다음 배송일까지 필요한 일수 계산
 function getDaysUntilNextDelivery(vendor) {
     const today = new Date();
     let daysCount = 0;
@@ -319,8 +362,28 @@ function getDaysUntilNextDelivery(vendor) {
         break;
     }
     
-    // 최소 1일 보장 (혹시 모를 경우 대비)
+    // 최소 1일 보장
     return Math.max(1, daysCount);
+}
+
+// ✅ 배송 정보 계산
+function getDeliveryInfo(vendor) {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const daysNeeded = getDaysUntilNextDelivery(vendor);
+    const endDate = new Date(tomorrow);
+    endDate.setDate(endDate.getDate() + daysNeeded - 1);
+    
+    const tomorrowStr = `${tomorrow.getMonth()+1}/${tomorrow.getDate()}(${WEEKDAYS[tomorrow.getDay()]})`;
+    const endDateStr = `${endDate.getMonth()+1}/${endDate.getDate()}(${WEEKDAYS[endDate.getDay()]})`;
+    
+    return {
+        deliveryDate: tomorrowStr,
+        endDate: endDateStr,
+        days: daysNeeded
+    };
 }
 
 // 발주 확인 프로세스
@@ -374,6 +437,12 @@ async function checkOrderConfirmation() {
             }
             
             if (needsConfirmation) {
+                // SPC 단위 변환
+                let displayUnit = item.발주단위;
+                if (vendor === 'SPC') {
+                    displayUnit = getDisplayUnit(item.발주단위, item.품목명);
+                }
+                
                 confirmItems[vendor].push({
                     ...item,
                     itemKey,
@@ -382,7 +451,8 @@ async function checkOrderConfirmation() {
                     daysNeeded,
                     orderAmount,
                     lastOrderDate,
-                    reason
+                    reason,
+                    displayUnit
                 });
             }
         });
@@ -399,7 +469,7 @@ async function checkOrderConfirmation() {
     }
 }
 
-// 발주 확인 모달 표시
+// ✅ 개선: 발주 확인 모달 표시 (테이블 형태)
 function showConfirmModal(confirmItems) {
     const modal = document.getElementById('confirmModal');
     const content = document.getElementById('confirmContent');
@@ -409,26 +479,47 @@ function showConfirmModal(confirmItems) {
     for (const vendor in confirmItems) {
         const items = confirmItems[vendor];
         if (items.length > 0) {
+            // 배송 정보 표시
+            const deliveryInfo = getDeliveryInfo(vendor);
+            
             html += `
-                <div class="confirm-section">
-                    <h3>⚠️ ${vendor}</h3>
+                <div class="delivery-info-box">
+                    <h3>📦 ${vendor}</h3>
+                    <p>📅 배송일: ${deliveryInfo.deliveryDate} (내일)</p>
+                    <p>📊 사용기간: ${deliveryInfo.deliveryDate} ~ ${deliveryInfo.endDate} (${deliveryInfo.days}일)</p>
+                </div>
+                
+                <div class="confirm-table-wrapper">
+                    <table class="confirm-table">
+                        <thead>
+                            <tr>
+                                <th>품목명</th>
+                                <th>사유</th>
+                                <th>마지막발주</th>
+                                <th>현재재고</th>
+                                <th>권장발주</th>
+                            </tr>
+                        </thead>
+                        <tbody>
             `;
             
             items.forEach(item => {
                 html += `
-                    <div class="confirm-item">
-                        <strong>${item.품목명}</strong><br>
-                        ${item.reason}<br>
-                        마지막 발주: ${item.lastOrderDate || '기록 없음'}<br>
-                        현재 재고: ${item.currentStock} ${item.발주단위}<br>
-                        하루 사용량: ${item.usage} ${item.발주단위}<br>
-                        필요 일수: ${item.daysNeeded}일<br>
-                        권장 발주량: ${Math.round(item.orderAmount * 10) / 10} ${item.발주단위}
-                    </div>
+                    <tr>
+                        <td><strong>${item.품목명}</strong></td>
+                        <td style="color: #f44336;">${item.reason}</td>
+                        <td>${item.lastOrderDate || '-'}</td>
+                        <td>${item.currentStock} ${item.displayUnit}</td>
+                        <td><strong>${Math.round(item.orderAmount * 10) / 10} ${item.displayUnit}</strong></td>
+                    </tr>
                 `;
             });
             
-            html += `</div>`;
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
         }
     }
     
@@ -467,13 +558,26 @@ async function proceedToOrder() {
             
             const neededTotal = usage * daysNeeded;
             let orderAmount = Math.max(0, neededTotal - currentStock);
-            orderAmount = Math.round(orderAmount * 10) / 10; // 소수점 1자리
+            
+            // SPC는 정수로 반올림
+            if (vendor === 'SPC') {
+                orderAmount = Math.round(orderAmount);
+            } else {
+                orderAmount = Math.round(orderAmount * 10) / 10;
+            }
             
             if (orderAmount > 0) {
+                // SPC 단위 변환
+                let displayUnit = item.발주단위;
+                if (vendor === 'SPC') {
+                    displayUnit = getDisplayUnit(item.발주단위, item.품목명);
+                }
+                
                 orderData[vendor].push({
                     ...item,
                     orderAmount,
-                    daysNeeded
+                    daysNeeded,
+                    displayUnit
                 });
             }
         });
@@ -500,7 +604,6 @@ async function proceedToOrder() {
         }
     } catch (error) {
         console.error('발주 저장 오류:', error);
-        // 오류가 있어도 발주서는 표시
         showOrderModal(orderData);
     }
 }
@@ -521,7 +624,7 @@ function showOrderModal(orderData) {
                     <div class="order-items" id="order_${vendor}">`;
             
             items.forEach(item => {
-                html += `${item.품목명} ${item.orderAmount}${item.발주단위}\n`;
+                html += `${item.품목명} ${item.orderAmount}${item.displayUnit}\n`;
             });
             
             html += `</div>
@@ -541,8 +644,7 @@ function showOrderModal(orderData) {
 // 발주서 모달 닫기
 function closeOrderModal() {
     document.getElementById('orderModal').classList.remove('active');
-    // 재고 화면 갱신
-    renderInventoryForm();
+    renderUnifiedInventoryForm();
 }
 
 // 카카오톡 복사
@@ -558,7 +660,6 @@ function copyToKakao() {
     
     copyText += `\n발주일시: ${new Date().toLocaleString('ko-KR')}`;
     
-    // 클립보드에 복사
     navigator.clipboard.writeText(copyText).then(() => {
         showAlert('카카오톡 복사 완료! 📋', 'success');
     }).catch(err => {
@@ -778,9 +879,14 @@ function renderInventoryHistory(history) {
             vendorItems.forEach(item => {
                 const itemKey = `${vendor}_${item.품목명}`;
                 const stock = record.inventory[itemKey] || 0;
-                if (stock > 0 || true) { // 모든 품목 표시
-                    html += `${item.품목명}: ${stock}${item.발주단위}<br>`;
+                
+                // SPC 단위 변환
+                let displayUnit = item.발주단위;
+                if (vendor === 'SPC') {
+                    displayUnit = getDisplayUnit(item.발주단위, item.품목명);
                 }
+                
+                html += `${item.품목명}: ${stock}${displayUnit}<br>`;
             });
             
             html += `
@@ -839,7 +945,8 @@ function renderOrderHistory(orders) {
                 `;
                 
                 items.forEach(item => {
-                    html += `${item.품목명}: ${item.orderAmount}${item.발주단위}<br>`;
+                    const displayUnit = item.displayUnit || item.발주단위;
+                    html += `${item.품목명}: ${item.orderAmount}${displayUnit}<br>`;
                 });
                 
                 html += `
