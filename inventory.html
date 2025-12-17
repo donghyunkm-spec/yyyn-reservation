@@ -41,7 +41,6 @@
             <div class="form-container">
                 <h2>📝 재고 입력</h2>
                 
-                <!-- 필터 및 미발주 품목 확인 버튼 -->
                 <div class="inventory-controls">
                     <div class="vendor-quick-nav">
                         <button class="vendor-nav-btn" onclick="scrollToVendor('삼시세끼')">삼시세끼</button>
@@ -70,19 +69,15 @@
         <div id="standard-tab" class="tab-content">
             <div class="form-container">
                 <h2>⚙️ 하루 사용량 설정</h2>
-                
                 <div class="info-box">
                     <p>💡 <strong>하루 사용량</strong>을 정확히 설정하면 자동으로 필요한 일수만큼 발주량이 계산됩니다.</p>
                 </div>
-
                 <div class="vendor-selector">
                     <button class="vendor-btn active" data-vendor="삼시세끼" onclick="selectStandardVendor('삼시세끼')">삼시세끼</button>
                     <button class="vendor-btn" data-vendor="SPC" onclick="selectStandardVendor('SPC')">SPC</button>
                     <button class="vendor-btn" data-vendor="기타" onclick="selectStandardVendor('기타')">기타</button>
                 </div>
-
                 <div id="standardForm" class="inventory-form"></div>
-
                 <div class="form-actions">
                     <button onclick="saveStandard()" class="submit-btn">💾 저장</button>
                 </div>
@@ -93,20 +88,44 @@
             <div class="form-container">
                 <h2>🛠 품목 관리</h2>
                 <div class="info-box">
-                    <p>💡 재고 위치에 맞춰 <strong>순서를 변경(▲▼)</strong>하거나, 새로운 품목을 <strong>추가/삭제</strong>하세요.</p>
+                    <p>💡 <strong>매주 화요일</strong> 선택 시 화요일에만 입력창이 나타납니다.</p>
                 </div>
 
                 <div class="add-item-box">
                     <h3>➕ 새 품목 추가</h3>
-                    <div class="add-item-form">
-                        <select id="newItemVendor">
-                            <option value="삼시세끼">삼시세끼</option>
-                            <option value="SPC">SPC</option>
-                            <option value="기타">기타</option>
-                        </select>
-                        <input type="text" id="newItemName" placeholder="품목명 (예: 양파)">
-                        <input type="text" id="newItemUnit" placeholder="단위 (예: 망)">
-                        <button onclick="addNewItem()" class="btn-primary">추가</button>
+                    <div class="add-item-form-grid">
+                        <div class="form-row">
+                            <label>업체</label>
+                            <select id="newItemVendor">
+                                <option value="삼시세끼">삼시세끼</option>
+                                <option value="SPC">SPC</option>
+                                <option value="기타">기타</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label>품목명</label>
+                            <input type="text" id="newItemName" placeholder="예: 양파">
+                        </div>
+                        <div class="form-row">
+                            <label>단위</label>
+                            <input type="text" id="newItemUnit" placeholder="예: 망, kg">
+                        </div>
+                        <div class="form-row">
+                            <label>중요도</label>
+                            <select id="newItemImportance">
+                                <option value="중">중 (기본)</option>
+                                <option value="상">상 (필수)</option>
+                                <option value="하">하</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label>관리 주기</label>
+                            <select id="newItemCycle">
+                                <option value="daily">매일 관리</option>
+                                <option value="weekly">매주 화요일만</option>
+                            </select>
+                        </div>
+                        <button onclick="addNewItem()" class="btn-primary" style="margin-top: 10px; width: 100%;">추가하기</button>
                     </div>
                 </div>
 
@@ -129,10 +148,8 @@
         <div id="holidays-tab" class="tab-content">
             <div class="form-container">
                 <h2>🗓️ 휴일 관리</h2>
-                
                 <div class="holiday-section">
                     <h3>🏢 우리 가게 휴일</h3>
-                    <div class="holiday-info"><p>추석, 설날 등 가게 휴무일을 등록하세요</p></div>
                     <div class="form-group">
                         <div style="display: flex; gap: 10px;">
                             <input type="date" id="storeHolidayDate" style="flex: 1;">
@@ -141,10 +158,8 @@
                     </div>
                     <div class="holiday-list" id="storeHolidayList"></div>
                 </div>
-
                 <div class="holiday-section">
                     <h3>🚚 삼시세끼 휴일</h3>
-                    <div class="holiday-info"><p>기본: 매주 일요일 휴무 (자동 적용)</p></div>
                     <div class="form-group">
                         <div style="display: flex; gap: 10px;">
                             <input type="date" id="samsiHolidayDate" style="flex: 1;">
@@ -153,10 +168,8 @@
                     </div>
                     <div class="holiday-list" id="samsiHolidayList"></div>
                 </div>
-
                 <div class="holiday-section">
                     <h3>🍞 SPC 휴일</h3>
-                    <div class="holiday-info"><p>기본: 매주 일요일 휴무 (자동 적용)</p></div>
                     <div class="form-group">
                         <div style="display: flex; gap: 10px;">
                             <input type="date" id="spcHolidayDate" style="flex: 1;">
@@ -165,10 +178,8 @@
                     </div>
                     <div class="holiday-list" id="spcHolidayList"></div>
                 </div>
-
                 <div class="holiday-section">
                     <h3>🦪 기타업체 휴일</h3>
-                    <div class="holiday-info"><p>굴 업체 등 기타 업체 휴일을 등록하세요</p></div>
                     <div class="form-group">
                         <div style="display: flex; gap: 10px;">
                             <input type="date" id="etcHolidayDate" style="flex: 1;">
@@ -213,7 +224,6 @@
         </div>
     </div>
 
-    <!-- 장기 미발주 품목 모달 -->
     <div id="noOrderModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">

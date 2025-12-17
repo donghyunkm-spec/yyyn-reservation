@@ -12,17 +12,15 @@ let holidays = {
     '기타': []
 };
 let lastOrderDates = {};
-let recentHistory = []; // (변경) 어제 재고 -> 최근 재고 리스트로 변경
-
+let recentHistory = []; 
 
 // ==========================================================
 // 추가된 전역 변수
 // ==========================================================
-let yesterdayInventory = {}; // 어제 재고
-let currentSortOrder = 'default'; // 정렬 순서: 'default' 또는 'lastOrder'
-let allItemsWithInfo = []; // 정렬용 전체 품목 리스트
-let currentWarnings = {}; // [NEW] 발주 확인 사유 저장용
-
+let yesterdayInventory = {}; 
+let currentSortOrder = 'default'; 
+let allItemsWithInfo = []; 
+let currentWarnings = {}; 
 
 const API_BASE = '';
 const PASSWORD = '1234';
@@ -69,7 +67,7 @@ async function showMainScreen() {
     document.getElementById('mainScreen').style.display = 'block';
     
     await loadData();
-    await loadRecentInventory(); // (변경) 이름 변경됨
+    await loadRecentInventory(); 
     renderUnifiedInventoryForm();
     renderStandardForm();
     loadHolidays();
@@ -104,8 +102,6 @@ async function loadData() {
         
     } catch (error) {
         console.error('데이터 로드 실패 (로컬 모드일 수 있음):', error);
-        // showAlert('데이터 로드 실패', 'error'); 
-        // 데이터가 없어도 UI 렌더링을 위해 진행
     }
 }
 
@@ -118,15 +114,12 @@ function showTab(tabName) {
         content.classList.remove('active');
     });
     
-    // 버튼 활성화 처리
     const btn = document.querySelector(`button[onclick="showTab('${tabName}')"]`);
     if(btn) btn.classList.add('active');
 
-    // 탭 내용 활성화
     const content = document.getElementById(`${tabName}-tab`);
     if(content) content.classList.add('active');
     
-    // 탭별 초기화 로직
     if (tabName === 'inventory') {
         renderUnifiedInventoryForm();
     } else if (tabName === 'standard') {
@@ -138,12 +131,10 @@ function showTab(tabName) {
     } else if (tabName === 'orderHistory') {
         loadOrderHistory();
     } else if (tabName === 'manageItems') {
-        // [NEW] 품목 관리 탭 진입 시 렌더링
         renderManageItems();
     }
 }
 
-// 업체 섹션으로 스크롤
 function scrollToVendor(vendor) {
     const section = document.getElementById(`vendor-section-${vendor}`);
     if (section) {
@@ -152,7 +143,7 @@ function scrollToVendor(vendor) {
 }
 
 // ==========================================================
-// 수정된 재고 입력 폼 렌더링 (어제 재고 + 마지막 발주일 + 정렬)
+// [수정됨] 재고 입력 폼 렌더링 (요일 체크 로직 추가)
 // ==========================================================
 function renderUnifiedInventoryForm() {
     const formContainer = document.getElementById('inventoryForm');
@@ -161,14 +152,22 @@ function renderUnifiedInventoryForm() {
     let html = '';
     const vendorOrder = ['삼시세끼', 'SPC', '기타'];
     
+    // [NEW] 오늘 요일 확인 (0:일, 1:월, 2:화, 3:수, 4:목, 5:금, 6:토)
+    const today = new Date();
+    const isTuesday = today.getDay() === 2;
+    
     // 정렬 로직
     if (currentSortOrder === 'lastOrder') {
-        // 모든 품목을 하나의 배열로 모아서 마지막 발주일 기준으로 정렬
         allItemsWithInfo = [];
         
         for (const vendor of vendorOrder) {
             const vendorItems = items[vendor] || [];
             vendorItems.forEach(item => {
+                // [NEW] 관리주기가 'weekly'인데 오늘이 화요일이 아니면 스킵
+                if (item.관리주기 === 'weekly' && !isTuesday) {
+                    return;
+                }
+
                 const itemKey = `${vendor}_${item.품목명}`;
                 const lastOrderDate = lastOrderDates[itemKey] || '';
                 const daysSince = lastOrderDate ? getDaysSince(lastOrderDate) : 999;
@@ -183,10 +182,8 @@ function renderUnifiedInventoryForm() {
             });
         }
         
-        // 발주일 오래된 순으로 정렬
         allItemsWithInfo.sort((a, b) => b.daysSince - a.daysSince);
         
-        // 렌더링
         html += `<div class="vendor-section"><h3 style="margin-bottom:10px; color:#4CAF50;">📅 발주일 오래된 순</h3>`;
         
         allItemsWithInfo.forEach(({vendor, item, itemKey, lastOrderDate, daysSince}) => {
@@ -196,15 +193,22 @@ function renderUnifiedInventoryForm() {
         html += `</div>`;
         
     } else {
-        // 기본 순서 (업체별)
         vendorOrder.forEach(vendor => {
             const vendorItems = items[vendor] || [];
             if (vendorItems.length === 0) return;
             
+            // 해당 업체에 오늘 보여줄 아이템이 하나라도 있는지 확인
+            const visibleItems = vendorItems.filter(item => {
+                if (item.관리주기 === 'weekly' && !isTuesday) return false;
+                return true;
+            });
+
+            if (visibleItems.length === 0) return; // 보여줄 아이템 없으면 섹션 숨김
+
             html += `<div id="vendor-section-${vendor}" class="vendor-section">`;
             html += `<h3 style="margin-bottom:10px; color:#4CAF50;">📦 ${vendor}</h3>`;
             
-            vendorItems.forEach(item => {
+            visibleItems.forEach(item => {
                 const itemKey = `${vendor}_${item.품목명}`;
                 const lastOrderDate = lastOrderDates[itemKey] || '';
                 const daysSince = lastOrderDate ? getDaysSince(lastOrderDate) : 999;
@@ -216,16 +220,14 @@ function renderUnifiedInventoryForm() {
         });
     }
     
-    if (!html) html = '<p style="text-align: center; color: #999; padding: 30px;">품목이 없습니다.</p>';
+    if (!html) html = '<p style="text-align: center; color: #999; padding: 30px;">오늘 입력할 품목이 없습니다.</p>';
     formContainer.innerHTML = html;
 }
 
-// [inventory.js] renderItemGroup 함수 (개선 버전)
 function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
     const currentStock = inventory[itemKey] || 0;
     const usage = dailyUsage[itemKey] || 0;
     
-    // 어제 재고 찾기
     let yesterdayStock = null;
     const todayStr = new Date().toISOString().split('T')[0];
     const lastRecord = recentHistory.find(r => r.date !== todayStr);
@@ -235,7 +237,6 @@ function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
          if (val !== undefined) yesterdayStock = val;
     }
 
-    // 단위 설정
     let displayUnit = item.발주단위;
     if (vendor === 'SPC') {
         const spcInfo = getSPCInfo(item.품목명);
@@ -244,7 +245,6 @@ function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
     
     const displayStockValue = (currentStock === 0) ? '' : currentStock;
     
-    // 마지막 발주일 표시
     let lastOrderDisplay = '';
     if (lastOrderDate) {
         const daysColor = daysSince > 10 ? '#f44336' : (daysSince > 7 ? '#ef6c00' : '#999');
@@ -253,7 +253,6 @@ function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
          lastOrderDisplay = `<span style="font-size:11px; font-weight:normal; color:#bbb; margin-left:8px;">(발주없음)</span>`;
     }
 
-    // 전일 재고 값 및 버튼 상태 설정
     let prevValueDisplay = '-';
     let btnDisabled = 'disabled';
     let btnClass = 'btn-same disabled';
@@ -266,20 +265,24 @@ function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
         btnOnClick = `onclick="setStockValue('${itemKey}', ${yesterdayStock})"`;
     }
 
-    // HTML 렌더링 (깔끔한 레이아웃)
+    // [NEW] 관리주기 뱃지 표시
+    let cycleBadge = '';
+    if (item.관리주기 === 'weekly') {
+        cycleBadge = `<span style="background:#E1F5FE; color:#0288D1; font-size:10px; padding:2px 5px; border-radius:4px; margin-left:5px;">매주 화</span>`;
+    }
+
     let html = `
         <div class="item-group compact-group">
             <div class="item-header-compact">
                 <span class="item-name">
                     ${item.품목명}
+                    ${cycleBadge}
                     ${lastOrderDisplay}
                 </span>
                 ${item.중요도 ? `<span class="item-importance importance-${item.중요도}">${item.중요도}</span>` : ''}
             </div>
 
             <div class="inventory-row-controls">
-                
-                <!-- 1. 전일 재고 -->
                 <div class="control-cell prev-cell">
                     <span class="cell-label">전일재고</span>
                     <div class="prev-value-box">
@@ -288,7 +291,6 @@ function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
                     </div>
                 </div>
 
-                <!-- 2. 어제값 복사 버튼 -->
                 <div class="control-cell btn-cell">
                     <span class="cell-label">어제값</span>
                     <button type="button" class="${btnClass}" ${btnOnClick} ${btnDisabled} title="전일 재고와 동일하게 입력">
@@ -296,7 +298,6 @@ function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
                     </button>
                 </div>
 
-                <!-- 3. 현재 재고 입력 -->
                 <div class="control-cell input-cell">
                     <span class="cell-label">현재재고</span>
                     <div class="input-wrapper">
@@ -306,7 +307,6 @@ function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
                     </div>
                 </div>
                 
-                <!-- 4. 하루 사용량 -->
                 <div class="control-cell usage-cell">
                     <span class="cell-label">하루사용</span>
                     <div class="usage-wrapper">
@@ -314,17 +314,12 @@ function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
                         <span class="unit">${displayUnit}</span>
                     </div>
                 </div>
-
             </div>
         </div>
     `;
-    
     return html;
 }
 
-
-
-// 업체 선택 (하루사용량)
 function selectStandardVendor(vendor) {
     currentStandardVendor = vendor;
     document.querySelectorAll('#standard-tab .vendor-btn').forEach(btn => {
@@ -334,7 +329,6 @@ function selectStandardVendor(vendor) {
     renderStandardForm();
 }
 
-// 3. 하루 사용량 설정 폼 (수정됨: SPC 단위 동적 처리)
 function renderStandardForm() {
     const formContainer = document.getElementById('standardForm');
     if (!formContainer) return;
@@ -352,7 +346,6 @@ function renderStandardForm() {
         const itemKey = `${currentStandardVendor}_${item.품목명}`;
         const usage = dailyUsage[itemKey] || 0;
         
-        // [수정] SPC 단위 동적 처리
         let displayUnit = item.발주단위;
         if (currentStandardVendor === 'SPC') {
             const spcInfo = getSPCInfo(item.품목명);
@@ -366,6 +359,7 @@ function renderStandardForm() {
                 <div class="standard-name">
                     ${item.품목명}
                     ${item.중요도 ? `<span style="font-size:10px; color:#ef6c00; margin-left:4px;">(${item.중요도})</span>` : ''}
+                    ${item.관리주기 === 'weekly' ? '<span style="font-size:10px; color:#0288D1; margin-left:4px;">[화]</span>' : ''}
                 </div>
                 <div class="standard-input-area">
                     <div class="input-wrapper">
@@ -381,19 +375,19 @@ function renderStandardForm() {
     formContainer.innerHTML = html;
 }
 
-// 재고 저장 및 발주 확인 (수정됨: 빈 칸을 0으로 처리하여 저장)
 async function saveInventory() {
     try {
-        const newInventory = { ...inventory }; // 기존 데이터 복사
+        const newInventory = { ...inventory };
         
         for (const vendor in items) {
             const vendorItems = items[vendor];
             vendorItems.forEach(item => {
                 const itemKey = `${vendor}_${item.품목명}`;
                 const inputElement = document.getElementById(`current_${itemKey}`);
+                
+                // [중요] 화면에 렌더링된 항목만 저장 (화요일이 아니어서 숨겨진 항목은 기존 값 유지)
                 if (inputElement) {
                     const val = inputElement.value.trim();
-                    // 빈 칸이면 0으로 저장
                     newInventory[itemKey] = val === '' ? 0 : parseFloat(val);
                 }
             });
@@ -416,14 +410,12 @@ async function saveInventory() {
         }
     } catch (error) {
         console.error('재고 저장 오류 (로컬 모드):', error);
-        // API 실패 시에도 진행 (테스트용)
         inventory = newInventory;
         showAlert('재고가 저장되었습니다(로컬).', 'success');
         await checkOrderConfirmation();
     }
 }
 
-// 다음 배송일까지 필요한 일수 계산
 function getDaysUntilNextDelivery(vendor) {
     const today = new Date();
     let daysCount = 0;
@@ -456,7 +448,6 @@ function getDaysUntilNextDelivery(vendor) {
     return Math.max(1, daysCount);
 }
 
-// 배송 정보 계산
 function getDeliveryInfo(vendor) {
     const today = new Date();
     const tomorrow = new Date(today);
@@ -476,17 +467,15 @@ function getDeliveryInfo(vendor) {
     };
 }
 
-// [inventory.js 내 checkOrderConfirmation 함수 전체 교체]
+// [수정됨] 발주 확인 (경고 로직에서 주간 항목 제외)
 async function checkOrderConfirmation() {
     const confirmItems = { '삼시세끼': [], 'SPC': [], '기타': [] };
     
-    // 오늘 날짜 제외하고 과거 데이터만 추출 (T-1, T-2 비교용)
     const todayStr = new Date().toISOString().split('T')[0];
     const pastRecords = recentHistory.filter(r => r.date !== todayStr);
     
-    // 최근 2일치 데이터 (어제, 그제)
-    const recordD1 = pastRecords[0]; // 어제 (가장 최근)
-    const recordD2 = pastRecords[1]; // 그제
+    const recordD1 = pastRecords[0]; 
+    const recordD2 = pastRecords[1]; 
     
     for (const vendor in items) {
         const vendorItems = items[vendor];
@@ -494,24 +483,22 @@ async function checkOrderConfirmation() {
         
         vendorItems.forEach(item => {
             const itemKey = `${vendor}_${item.품목명}`;
-            // 현재 입력된 값 가져오기 (DB값이 아니라 현재 input 값이어야 함)
             const inputEl = document.getElementById(`current_${itemKey}`);
-            const currentInputValue = inputEl ? (inputEl.value === '' ? 0 : parseFloat(inputEl.value)) : 0;
             
-            // inventory 변수에는 아직 저장이 안 된 상태일 수 있으므로 input 값 우선 사용
+            // 화면에 없는 품목(오늘 입력 안하는 주간 품목)은 체크 패스
+            if (!inputEl) return;
+
+            const currentInputValue = inputEl.value === '' ? 0 : parseFloat(inputEl.value);
             const usage = dailyUsage[itemKey] || 0;
             const neededTotal = usage * daysNeeded;
             
-            // 순수 부족분
             let orderAmountRaw = Math.max(0, neededTotal - currentInputValue);
-            
             let displayQty = 0;
             let displayUnit = item.발주단위;
 
             if (vendor === 'SPC') {
                 const spcInfo = getSPCInfo(item.품목명);
                 displayUnit = spcInfo.unit; 
-
                 if (orderAmountRaw > 0) {
                     const packsNeeded = Math.ceil(orderAmountRaw / spcInfo.weight);
                     if (spcInfo.type === 'weight' && spcInfo.unit === 'kg') {
@@ -521,9 +508,7 @@ async function checkOrderConfirmation() {
                     }
                 }
             } else if (vendor === '삼시세끼') {
-                if (orderAmountRaw > 0) {
-                    displayQty = Math.ceil(orderAmountRaw);
-                }
+                if (orderAmountRaw > 0) displayQty = Math.ceil(orderAmountRaw);
             } else {
                 displayQty = Math.round(orderAmountRaw * 10) / 10;
             }
@@ -532,7 +517,6 @@ async function checkOrderConfirmation() {
             let needsConfirmation = false;
             let reason = '';
             
-            // 1. 발주량 0인데 중요품목인 경우
             if (displayQty === 0 && (item.중요도 === '상' || item.중요도 === '중')) {
                 needsConfirmation = true; reason = `중요 품목 미발주`;
             }
@@ -540,16 +524,14 @@ async function checkOrderConfirmation() {
                  needsConfirmation = true; reason = 'SPC 품목 미발주';
             }
 
-            // [NEW] 2. 3일 연속 동일 재고 체크 (재고가 0이 아닐 때만)
-            if (currentInputValue > 0 && recordD1 && recordD2) {
-                // 해당 품목의 과거 재고 가져오기
+            // [NEW] 3일 연속 동일 재고 체크 (주간 품목은 제외)
+            if (item.관리주기 !== 'weekly' && currentInputValue > 0 && recordD1 && recordD2) {
                 const stockD1 = recordD1.inventory[vendor] ? recordD1.inventory[vendor][itemKey] : undefined;
                 const stockD2 = recordD2.inventory[vendor] ? recordD2.inventory[vendor][itemKey] : undefined;
 
                 if (stockD1 !== undefined && stockD2 !== undefined) {
                     if (currentInputValue === stockD1 && currentInputValue === stockD2) {
                         needsConfirmation = true;
-                        // 이미 다른 사유가 있다면 덧붙임
                         reason = reason ? `${reason}, 3일간 재고 동일` : '⚠️ 3일간 재고값 동일';
                     }
                 }
@@ -559,7 +541,7 @@ async function checkOrderConfirmation() {
                 confirmItems[vendor].push({
                     ...item,
                     itemKey,
-                    currentStock: currentInputValue, // 현재 입력값
+                    currentStock: currentInputValue,
                     orderAmount: displayQty,
                     displayUnit,
                     reason,
@@ -571,10 +553,8 @@ async function checkOrderConfirmation() {
     
     const hasConfirmItems = Object.values(confirmItems).some(arr => arr.length > 0);
 
-    // [NEW] 확인 모달에 띄운 데이터를 전역 변수에 저장 (서버 전송용)
     currentWarnings = {};
     if (hasConfirmItems) {
-        // 깊은 복사로 저장
         currentWarnings = JSON.parse(JSON.stringify(confirmItems));
         showConfirmModal(confirmItems);
     } else {
@@ -582,7 +562,6 @@ async function checkOrderConfirmation() {
     }
 }
 
-// 발주 확인 모달 표시 (테이블 형태)
 function showConfirmModal(confirmItems) {
     const modal = document.getElementById('confirmModal');
     const content = document.getElementById('confirmContent');
@@ -600,7 +579,6 @@ function showConfirmModal(confirmItems) {
                     <p>📅 배송일: ${deliveryInfo.deliveryDate} (내일)</p>
                     <p>📊 사용기간: ${deliveryInfo.deliveryDate} ~ ${deliveryInfo.endDate} (${deliveryInfo.days}일)</p>
                 </div>
-                
                 <div class="confirm-table-wrapper">
                     <table class="confirm-table">
                         <thead>
@@ -627,37 +605,26 @@ function showConfirmModal(confirmItems) {
                 `;
             });
             
-            html += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
+            html += `</tbody></table></div>`;
         }
     }
     
-    if (!html) {
-        html = '<p style="text-align: center; color: #999;">확인이 필요한 항목이 없습니다.</p>';
-    }
+    if (!html) html = '<p style="text-align: center; color: #999;">확인이 필요한 항목이 없습니다.</p>';
     
     content.innerHTML = html;
     modal.classList.add('active');
 }
 
-// 발주 확인 모달 닫기
 function closeConfirmModal() {
     document.getElementById('confirmModal').classList.remove('active');
 }
 
-// ==========================================================
-// 발주 진행 시 중복 방지 및 재고 저장
-// ==========================================================
 async function proceedToOrder() {
     closeConfirmModal();
     
     const orderData = { '삼시세끼': [], 'SPC': [], '기타': [] };
-    const currentInventoryCopy = {};  // 현재 재고 복사본
+    const currentInventoryCopy = {};
     
-    // 현재 재고 복사
     for (const key in inventory) {
         currentInventoryCopy[key] = inventory[key];
     }
@@ -668,7 +635,10 @@ async function proceedToOrder() {
         
         vendorItems.forEach(item => {
             const itemKey = `${vendor}_${item.품목명}`;
-            const currentStock = inventory[itemKey] || 0;
+            // 화면에 렌더링된 input이 있으면 그 값을, 없으면(주간품목 등) 저장된 값 사용
+            const inputEl = document.getElementById(`current_${itemKey}`);
+            const currentStock = inputEl ? (inputEl.value === '' ? 0 : parseFloat(inputEl.value)) : (inventory[itemKey] || 0);
+
             const usage = dailyUsage[itemKey] || 0;
             const neededTotal = usage * daysNeeded;
             let orderAmountRaw = Math.max(0, neededTotal - currentStock);
@@ -682,7 +652,6 @@ async function proceedToOrder() {
 
                 if (orderAmountRaw > 0) {
                     const packsNeeded = Math.ceil(orderAmountRaw / spcInfo.weight);
-                    
                     if (spcInfo.type === 'weight' && spcInfo.unit === 'kg') {
                         finalQty = packsNeeded * spcInfo.weight; 
                     } else {
@@ -690,9 +659,7 @@ async function proceedToOrder() {
                     }
                 }
             } else if (vendor === '삼시세끼') {
-                if (orderAmountRaw > 0) {
-                    finalQty = Math.ceil(orderAmountRaw);
-                }
+                if (orderAmountRaw > 0) finalQty = Math.ceil(orderAmountRaw);
             } else {
                 finalQty = Math.round(orderAmountRaw * 10) / 10;
             }
@@ -708,32 +675,23 @@ async function proceedToOrder() {
         });
     }
     
-    // [여기부터 수정] 
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
     const orderRecord = {
         date: todayStr,
         time: today.toTimeString().split(' ')[0].substring(0, 5),
         orders: orderData,
-        inventory: currentInventoryCopy
+        inventory: currentInventoryCopy,
+        warnings: currentWarnings 
     };
 
     try {
-        // [수정] 서버로 보낼 데이터에 warnings 추가
-        const payload = {
-            ...orderRecord,
-            warnings: currentWarnings // 모달에 떴던 그 경고 내용들
-        };
-
         await fetch(`${API_BASE}/api/inventory/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload) // 수정된 payload 전송
+            body: JSON.stringify(orderRecord)
         });
-        
-        // 발주 후 경고 초기화
         currentWarnings = {}; 
-        
         showOrderModal(orderData);
     } catch (error) {
         console.error(error);
@@ -741,26 +699,19 @@ async function proceedToOrder() {
     }
 }
 
-
-// 발주서 모달 표시
 function showOrderModal(orderData) {
     const modal = document.getElementById('orderModal');
     const content = document.getElementById('orderContent');
-    const footer = modal.querySelector('.modal-footer');
     
     let html = '';
     
     for (const vendor in orderData) {
         const items = orderData[vendor];
         if (items.length > 0) {
-            // 버튼 결정 로직
             let actionBtn = '';
-            
             if (vendor === 'SPC') {
-                // SPC: 내역 탭으로 이동 버튼
                 actionBtn = `<button onclick="goToOrderHistory()" class="btn-goto-history">📂 내역 보러가기</button>`;
             } else {
-                // 삼시세끼, 기타: 복사 버튼
                 actionBtn = `<button onclick="copyVendorOrder('${vendor}')" class="btn-mini-kakao">💬 복사</button>`;
             }
 
@@ -784,27 +735,22 @@ function showOrderModal(orderData) {
     }
     
     if (!html) html = '<p style="text-align: center; color: #999;">발주할 품목이 없습니다.</p>';
-    
     content.innerHTML = html;
-    // 하단 버튼은 기존 html 유지
     modal.classList.add('active');
 }
 
-// SPC 전용: 모달 닫고 발주내역 탭으로 이동하는 함수
 function goToOrderHistory() {
     closeOrderModal();
-    // 오늘 날짜로 설정하고 내역 탭 열기
     document.getElementById('orderDateFilter').valueAsDate = new Date();
-    showTab('orderHistory'); // 탭 이동
-    loadOrderHistory();      // 데이터 로드
+    showTab('orderHistory'); 
+    loadOrderHistory();      
 }
 
-// 업체별 복사 기능
 function copyVendorOrder(vendor) {
     const itemContainer = document.getElementById(`order_${vendor}`);
     if (!itemContainer) return;
 
-    const itemsText = itemContainer.textContent.trim(); // 공백 제거
+    const itemsText = itemContainer.textContent.trim();
     const today = new Date();
     const month = today.getMonth() + 1;
     const date = today.getDate();
@@ -812,13 +758,11 @@ function copyVendorOrder(vendor) {
     let copyText = '';
 
     if (vendor === '삼시세끼') {
-        // 삼시세끼 전용 포맷
         copyText = `안녕하세요 양은이네 오창점 발주하겠습니다.\n\n`;
         copyText += `${month}월 ${date}일\n\n`;
         copyText += itemsText;
         copyText += `\n\n감사합니다.`;
     } else {
-        // 기타 업체
         copyText = `[${vendor} 발주] ${month}/${date}\n\n${itemsText}`;
     }
     
@@ -830,13 +774,11 @@ function copyVendorOrder(vendor) {
     });
 }
 
-// 발주서 모달 닫기
 function closeOrderModal() {
     document.getElementById('orderModal').classList.remove('active');
     renderUnifiedInventoryForm();
 }
 
-// 카카오톡 복사 (전체 복사)
 function copyToKakao() {
     let copyText = '📦 발주 리스트\n\n';
     
@@ -857,7 +799,6 @@ function copyToKakao() {
     });
 }
 
-// 하루 사용량 저장 (수정됨: 빈 칸 0 처리)
 async function saveStandard() {
     try {
         const newUsage = { ...dailyUsage };
@@ -890,12 +831,11 @@ async function saveStandard() {
         }
     } catch (error) {
         console.error('하루 사용량 저장 오류 (로컬):', error);
-        dailyUsage = newUsage; // 로컬 반영
+        dailyUsage = newUsage; 
         showAlert('저장되었습니다(로컬).', 'success');
     }
 }
 
-// 휴일 로드
 async function loadHolidays() {
     try {
         const response = await fetch(`${API_BASE}/api/inventory/holidays`);
@@ -910,7 +850,6 @@ async function loadHolidays() {
     }
 }
 
-// 모든 휴일 렌더링
 function renderAllHolidays() {
     renderHolidayList('store', 'storeHolidayList');
     renderHolidayList('삼시세끼', 'samsiHolidayList');
@@ -918,7 +857,6 @@ function renderAllHolidays() {
     renderHolidayList('기타', 'etcHolidayList');
 }
 
-// 휴일 리스트 렌더링
 function renderHolidayList(type, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -946,7 +884,6 @@ function renderHolidayList(type, containerId) {
     container.innerHTML = html;
 }
 
-// 휴일 추가
 async function addHoliday(type) {
     let dateInput;
     if (type === 'store') {
@@ -997,7 +934,6 @@ async function addHoliday(type) {
     }
 }
 
-// 휴일 삭제
 async function removeHoliday(type, index) {
     if (!confirm('이 휴일을 삭제하시겠습니까?')) return;
     
@@ -1021,23 +957,19 @@ async function removeHoliday(type, index) {
     }
 }
 
-// 재고 내역 로드 (수정됨: 날짜 선택 방식)
 async function loadInventoryHistory() {
     try {
         let dateInput = document.getElementById('invHistoryDate');
-        // 날짜가 선택 안 되어있으면 오늘 날짜로 기본 설정
         if (!dateInput.value) {
             dateInput.valueAsDate = new Date();
         }
         const selectedDate = dateInput.value;
         const vendor = document.getElementById('invHistoryVendor').value;
         
-        // 서버에는 넉넉하게 최근 90일치 데이터를 요청하고, 프론트에서 날짜로 필터링합니다.
         const response = await fetch(`${API_BASE}/api/inventory/history?period=90&vendor=${vendor}`);
         const result = await response.json();
         
         if (result.success) {
-            // 선택한 날짜와 일치하는 기록 찾기
             const historyRecord = result.history.find(r => r.date === selectedDate);
             renderInventoryHistory(historyRecord, vendor);
         }
@@ -1047,7 +979,6 @@ async function loadInventoryHistory() {
     }
 }
 
-// 재고 내역 렌더링 (수정됨: 발주내역과 동일한 표 스타일)
 function renderInventoryHistory(record, vendorFilter) {
     const container = document.getElementById('inventoryHistoryList');
     if (!container) return;
@@ -1074,27 +1005,20 @@ function renderInventoryHistory(record, vendorFilter) {
     `;
 
     let hasData = false;
-
-    // 업체 순서 고정 (삼시세끼 -> SPC -> 기타)
     const vendorOrder = ['삼시세끼', 'SPC', '기타'];
     
     vendorOrder.forEach(vendorName => {
-        // 필터가 'all'이거나 해당 업체일 때만 표시
         if (vendorFilter !== 'all' && vendorFilter !== vendorName) return;
 
-        // 해당 업체의 재고 데이터가 있는지 확인
         if (record.inventory[vendorName]) {
             const vendorInventory = record.inventory[vendorName];
-            // 아이템 목록 가져오기 (전역 items 변수 활용)
             const masterItems = items[vendorName] || [];
 
             masterItems.forEach(item => {
                 const itemKey = `${vendorName}_${item.품목명}`;
-                // 기록된 재고가 있는 경우에만 표시 (0이라도 기록되었으면 표시)
                 if (vendorInventory[itemKey] !== undefined) {
                     hasData = true;
                     const stock = vendorInventory[itemKey];
-                    // 단위 표시 (SPC는 kg/box 등 구분, 나머지는 발주단위)
                     let displayUnit = item.발주단위;
                     if (vendorName === 'SPC') {
                         const spcInfo = getSPCInfo(item.품목명);
@@ -1122,7 +1046,6 @@ function renderInventoryHistory(record, vendorFilter) {
     }
 }
 
-// 발주 내역 로드
 async function loadOrderHistory() {
     try {
         let dateInput = document.getElementById('orderDateFilter');
@@ -1146,9 +1069,6 @@ async function loadOrderHistory() {
     }
 }
 
-// ==========================================================
-// 발주 내역 렌더링 (재고 추가)
-// ==========================================================
 function renderOrderHistory(orders, vendorFilter) {
     const container = document.getElementById('orderHistoryList');
     if (!container) return;
@@ -1211,9 +1131,6 @@ function renderOrderHistory(orders, vendorFilter) {
     }
 }
 
-
-
-// 유틸리티 함수
 function getDaysSince(dateString) {
     if (!dateString) return 999;
     const lastDate = new Date(dateString);
@@ -1236,43 +1153,35 @@ function showAlert(message, type = 'info') {
     }, 3000);
 }
 
-
-
-// SPC 품목 정보 파싱 (수정됨: 오징어/편육 예외처리 추가)
 function getSPCInfo(itemName) {
     let info = {
-        type: 'weight', // 기본은 무게 기준
-        weight: 1,      // 나누는 기준 값 (무게 또는 갯수)
-        unit: 'kg',     // 발주 단위
-        inputUnit: 'kg' // 입력 단위 (화면에 보여줄 단위)
+        type: 'weight', 
+        weight: 1,      
+        unit: 'kg',     
+        inputUnit: 'kg' 
     };
 
-    // 1. [예외] 손질오징어 (30미 = 1box)
     if (itemName.includes('손질오징어')) {
-        info.type = 'count_box'; // 갯수로 세서 박스로 발주
-        info.weight = 30;        // 1박스에 30개
-        info.unit = 'box';       // 발주 단위
-        info.inputUnit = '개';   // 입력 단위
+        info.type = 'count_box'; 
+        info.weight = 30;        
+        info.unit = 'box';       
+        info.inputUnit = '개';   
         return info;
     }
 
-    // 2. [예외] 덩어리편육 (300g = 1pak) -> 팩 단위 관리
     if (itemName.includes('덩어리편육')) {
         info.type = 'count_pack';
-        info.weight = 1;         // 1개 부족하면 1개 발주
+        info.weight = 1;         
         info.unit = 'pak';
-        info.inputUnit = '개';   // 입력 단위 (팩)
+        info.inputUnit = '개';   
         return info;
     }
 
-    // 3. 기본 로직 (무게 기준)
-    // 무게 추출 (예: /20kg/, /10kg/)
     const weightMatch = itemName.match(/\/(\d+(?:\.\d+)?)kg\//);
     if (weightMatch) {
         info.weight = parseFloat(weightMatch[1]);
     }
 
-    // 단위 추출
     const unitMatch = itemName.match(/(box|pak|kg|통|ea)$/i);
     if (unitMatch) {
         info.unit = unitMatch[1].toLowerCase();
@@ -1284,14 +1193,11 @@ function getSPCInfo(itemName) {
 }
 
 // ==========================================================
-// [NEW] 품목 관리 (추가 / 삭제 / 위치변경) 기능
+// [수정됨] 품목 관리 (관리주기, 중요도 추가 표시)
 // ==========================================================
-
-// 품목 관리 리스트 렌더링
 function renderManageItems() {
-    // 관리할 업체 선택값 확인
     const vendorSelect = document.getElementById('manageVendorSelect');
-    if (!vendorSelect) return; // 탭이 로드되지 않았을 경우 방어
+    if (!vendorSelect) return; 
     const vendor = vendorSelect.value;
     
     const container = document.getElementById('manageItemsList');
@@ -1306,6 +1212,14 @@ function renderManageItems() {
     
     let html = '<ul class="manage-ul">';
     vendorItems.forEach((item, index) => {
+        // [NEW] 관리주기 텍스트
+        const cycleText = (item.관리주기 === 'weekly') 
+            ? '<span style="color:#0288D1; font-size:11px; margin-left:4px;">[매주 화]</span>' 
+            : '';
+        
+        // [NEW] 중요도 텍스트
+        const imp = item.중요도 || '중';
+        
         html += `
             <li class="manage-li">
                 <div class="manage-controls">
@@ -1313,7 +1227,11 @@ function renderManageItems() {
                     <button class="btn-move" onclick="moveItem('${vendor}', ${index}, 1)">▼</button>
                 </div>
                 <div class="manage-info">
-                    <span class="manage-name">${item.품목명}</span>
+                    <span class="manage-name">
+                        ${item.품목명}
+                        <span style="font-size:11px; color:#ef6c00;">(${imp})</span>
+                        ${cycleText}
+                    </span>
                     <span class="manage-unit">${item.발주단위}</span>
                 </div>
                 <button class="btn-delete" onclick="deleteItem('${vendor}', ${index})">삭제</button>
@@ -1324,22 +1242,19 @@ function renderManageItems() {
     container.innerHTML = html;
 }
 
-// 품목 순서 변경
 function moveItem(vendor, index, direction) {
     const list = items[vendor];
     const newIndex = index + direction;
     
-    if (newIndex < 0 || newIndex >= list.length) return; // 범위 벗어남
+    if (newIndex < 0 || newIndex >= list.length) return; 
     
-    // 배열 요소 교환 (Swap)
     const temp = list[index];
     list[index] = list[newIndex];
     list[newIndex] = temp;
     
-    renderManageItems(); // 리렌더링
+    renderManageItems(); 
 }
 
-// 품목 삭제
 function deleteItem(vendor, index) {
     if (!confirm('정말 이 품목을 삭제하시겠습니까? (재고 데이터도 함께 사라질 수 있습니다)')) return;
     
@@ -1347,11 +1262,14 @@ function deleteItem(vendor, index) {
     renderManageItems();
 }
 
-// 새 품목 추가
+// [수정됨] 새 품목 추가 (중요도, 관리주기 받기)
 function addNewItem() {
     const vendor = document.getElementById('newItemVendor').value;
     const name = document.getElementById('newItemName').value.trim();
     const unit = document.getElementById('newItemUnit').value.trim();
+    // [NEW] 입력값 가져오기
+    const importance = document.getElementById('newItemImportance').value;
+    const cycle = document.getElementById('newItemCycle').value;
     
     if (!name) {
         showAlert('품목명을 입력하세요', 'error');
@@ -1360,7 +1278,6 @@ function addNewItem() {
     
     if (!items[vendor]) items[vendor] = [];
     
-    // 중복 체크
     const exists = items[vendor].some(i => i.품목명 === name);
     if (exists) {
         showAlert('이미 존재하는 품목입니다.', 'error');
@@ -1369,23 +1286,21 @@ function addNewItem() {
     
     items[vendor].push({
         "품목명": name,
-        "발주단위": unit || '개', // 기본값
-        "중요도": "중" // 기본값
+        "발주단위": unit || '개',
+        "중요도": importance, // [NEW]
+        "관리주기": cycle     // [NEW] (daily or weekly)
     });
     
-    // 입력창 초기화
     document.getElementById('newItemName').value = '';
     document.getElementById('newItemUnit').value = '';
     
     showAlert(`'${name}' 추가되었습니다.`, 'success');
     
-    // 만약 현재 보고 있는 리스트가 해당 업체라면 갱신
     if (document.getElementById('manageVendorSelect').value === vendor) {
         renderManageItems();
     }
 }
 
-// 변경사항 저장 (순서 및 추가/삭제 내역)
 async function saveItemChanges() {
     try {
         await fetch(`${API_BASE}/api/inventory/items`, {
@@ -1395,7 +1310,6 @@ async function saveItemChanges() {
         });
         showAlert('품목 순서 및 변경사항이 저장되었습니다.', 'success');
         
-        // 재고 입력 폼 등 다른 탭들도 갱신해줘야 함 (순서가 바뀌었으므로)
         renderUnifiedInventoryForm(); 
     } catch (e) {
         console.error(e);
@@ -1404,28 +1318,19 @@ async function saveItemChanges() {
     }
 }
 
-
-
-// ==========================================================
-// 어제 재고 로드 함수
-// ==========================================================
 async function loadRecentInventory() {
     try {
-        // 3일치 비교를 위해 넉넉하게 최근 5일치 데이터를 가져옵니다.
         const response = await fetch(`${API_BASE}/api/inventory/history?period=5&vendor=all`);
         const result = await response.json();
         
         if (result.success && result.history) {
-            recentHistory = result.history; // 최신순으로 정렬되어 있음 (index 0: 가장 최근)
+            recentHistory = result.history; 
         }
     } catch (error) {
         console.error('최근 재고 로드 실패:', error);
     }
 }
 
-// ==========================================================
-// 발주일 오래된 순 정렬 토글
-// ==========================================================
 function toggleSortOrder() {
     currentSortOrder = (currentSortOrder === 'default') ? 'lastOrder' : 'default';
     
@@ -1441,9 +1346,6 @@ function toggleSortOrder() {
     renderUnifiedInventoryForm();
 }
 
-// ==========================================================
-// 장기 미발주 품목 확인 모달
-// ==========================================================
 let currentNoOrderPeriod = 5;
 
 function showLongTermNoOrder() {
@@ -1460,7 +1362,6 @@ function closeNoOrderModal() {
 function filterNoOrderPeriod(days) {
     currentNoOrderPeriod = days;
     
-    // 버튼 활성화 상태 변경
     document.querySelectorAll('.period-btn').forEach(btn => {
         btn.classList.remove('active');
     });
@@ -1517,11 +1418,7 @@ function filterNoOrderPeriod(days) {
                 `;
             });
             
-            html += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
+            html += `</tbody></table></div>`;
         }
     }
     
@@ -1532,12 +1429,10 @@ function filterNoOrderPeriod(days) {
     content.innerHTML = html;
 }
 
-// [NEW] 재고 값 강제 입력 (복사 버튼용)
 function setStockValue(itemKey, value) {
     const input = document.getElementById(`current_${itemKey}`);
     if (input) {
         input.value = value;
-        // 시각적 피드백 (잠깐 깜빡임)
         input.style.backgroundColor = '#e8f5e9';
         setTimeout(() => {
             input.style.backgroundColor = 'white';

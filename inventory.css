@@ -984,17 +984,40 @@ body {
     box-shadow: 0 2px 4px rgba(229, 57, 53, 0.2);
 }
 
-/* 모바일 대응 */
+/* --- [NEW] 품목 추가 폼 그리드 스타일 --- */
+.add-item-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* 업체, 품목명, 단위는 전체 너비나 적절한 비율로 */
+.form-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-row label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+.form-row select,
+.form-row input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #f9f9f9;
+}
+
+/* 중요도와 관리주기는 작은 칸에 어울림 */
+/* 모바일에서는 한 줄에 하나씩 보이게 조정 */
 @media (max-width: 480px) {
-    .add-item-form {
-        flex-direction: column;
-    }
-    .add-item-form .btn-primary {
-        width: 100%;
-        margin-top: 5px;
-    }
-    .manage-li {
-        padding: 10px;
+    .add-item-form-grid {
+        grid-template-columns: 1fr; /* 모바일은 한 줄로 */
     }
 }
 
