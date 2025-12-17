@@ -52,6 +52,9 @@
                         <button class="filter-btn" id="sortOrderBtn" onclick="toggleSortOrder()">
                             📅 발주일 오래된 순
                         </button>
+                        <button class="filter-btn" id="toggleWeeklyBtn" onclick="toggleWeeklyItems()">
+                            🔄 주간 품목 표시 (화요일 외)
+                        </button>
                         <button class="filter-btn" onclick="showLongTermNoOrder()">
                             ⚠️ 장기 미발주 품목
                         </button>
@@ -265,6 +268,49 @@
             <div class="modal-footer">
                 <button onclick="copyToKakao()" class="btn-kakao">💬 카카오톡 복사</button>
                 <button onclick="closeOrderModal()" class="btn-primary">완료</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editItemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🛠 품목 수정</h2>
+                <button class="close-btn" onclick="closeEditItemModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editVendor">
+                <input type="hidden" id="editIndex">
+                
+                <div class="add-item-form-grid">
+                    <div class="form-row">
+                        <label>품목명</label>
+                        <input type="text" id="editName">
+                    </div>
+                    <div class="form-row">
+                        <label>단위</label>
+                        <input type="text" id="editUnit">
+                    </div>
+                    <div class="form-row">
+                        <label>중요도</label>
+                        <select id="editImportance">
+                            <option value="중">중 (기본)</option>
+                            <option value="상">상 (필수)</option>
+                            <option value="하">하</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label>관리 주기</label>
+                        <select id="editCycle">
+                            <option value="daily">매일 관리</option>
+                            <option value="weekly">매주 화요일만</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeEditItemModal()" class="btn-secondary">취소</button>
+                <button onclick="saveEditItem()" class="btn-primary">수정 완료</button>
             </div>
         </div>
     </div>

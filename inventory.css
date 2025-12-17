@@ -1507,3 +1507,33 @@ button[type="submit"]:hover {
 button[type="submit"]:active {
     transform: translateY(0);
 }
+
+/* [NEW] 품목 관리 리스트 버튼 그룹 */
+.manage-actions {
+    display: flex;
+    gap: 6px;
+    margin-left: 10px;
+}
+
+/* [NEW] 수정 버튼 스타일 */
+.btn-edit {
+    background: white;
+    color: #2196F3; /* 파란색 */
+    border: 1px solid #2196F3;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-edit:hover {
+    background: #e3f2fd;
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
+/* 기존 삭제 버튼과 높이 맞춤 */
+.btn-delete {
+    padding: 6px 12px;
+}

@@ -21,6 +21,7 @@ let yesterdayInventory = {};
 let currentSortOrder = 'default'; 
 let allItemsWithInfo = []; 
 let currentWarnings = {}; 
+let showWeeklyForced = false; // 주간 품목 강제 표시 상태
 
 const API_BASE = '';
 const PASSWORD = '1234';
@@ -142,9 +143,32 @@ function scrollToVendor(vendor) {
     }
 }
 
+// [NEW] 주간 품목 표시 토글 함수
+function toggleWeeklyItems() {
+    showWeeklyForced = !showWeeklyForced;
+    
+    const btn = document.getElementById('toggleWeeklyBtn');
+    if (showWeeklyForced) {
+        btn.classList.add('active');
+        btn.innerHTML = '✅ 주간 품목 표시 중';
+        btn.style.backgroundColor = '#FF9800'; // 주황색으로 강조
+        btn.style.borderColor = '#F57C00';
+        btn.style.color = 'white';
+    } else {
+        btn.classList.remove('active');
+        btn.innerHTML = '🔄 주간 품목 표시 (화요일 외)';
+        btn.style.backgroundColor = ''; // 원래대로
+        btn.style.borderColor = '';
+        btn.style.color = '';
+    }
+    
+    renderUnifiedInventoryForm(); // 리스트 다시 그리기
+}
+
 // ==========================================================
 // [수정됨] 재고 입력 폼 렌더링 (요일 체크 로직 추가)
 // ==========================================================
+// [수정] renderUnifiedInventoryForm 함수 (요일 및 강제표시 로직 적용)
 function renderUnifiedInventoryForm() {
     const formContainer = document.getElementById('inventoryForm');
     if (!formContainer) return;
@@ -152,19 +176,20 @@ function renderUnifiedInventoryForm() {
     let html = '';
     const vendorOrder = ['삼시세끼', 'SPC', '기타'];
     
-    // [NEW] 오늘 요일 확인 (0:일, 1:월, 2:화, 3:수, 4:목, 5:금, 6:토)
+    // 오늘 요일 확인 (화요일 = 2)
     const today = new Date();
     const isTuesday = today.getDay() === 2;
     
-    // 정렬 로직
+    // 정렬 로직 (기존과 동일하되 필터링 조건만 변경)
     if (currentSortOrder === 'lastOrder') {
         allItemsWithInfo = [];
         
         for (const vendor of vendorOrder) {
             const vendorItems = items[vendor] || [];
             vendorItems.forEach(item => {
-                // [NEW] 관리주기가 'weekly'인데 오늘이 화요일이 아니면 스킵
-                if (item.관리주기 === 'weekly' && !isTuesday) {
+                // [핵심 로직 변경] 
+                // 주간 관리 품목이고, 오늘이 화요일이 아니고, 강제 표시 버튼도 안 눌렀으면 -> 건너뜀
+                if (item.관리주기 === 'weekly' && !isTuesday && !showWeeklyForced) {
                     return;
                 }
 
@@ -185,25 +210,27 @@ function renderUnifiedInventoryForm() {
         allItemsWithInfo.sort((a, b) => b.daysSince - a.daysSince);
         
         html += `<div class="vendor-section"><h3 style="margin-bottom:10px; color:#4CAF50;">📅 발주일 오래된 순</h3>`;
-        
         allItemsWithInfo.forEach(({vendor, item, itemKey, lastOrderDate, daysSince}) => {
             html += renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince);
         });
-        
         html += `</div>`;
         
     } else {
+        // 일반 업체별 보기
         vendorOrder.forEach(vendor => {
             const vendorItems = items[vendor] || [];
             if (vendorItems.length === 0) return;
             
-            // 해당 업체에 오늘 보여줄 아이템이 하나라도 있는지 확인
+            // 필터링 적용
             const visibleItems = vendorItems.filter(item => {
-                if (item.관리주기 === 'weekly' && !isTuesday) return false;
+                // [핵심 로직 변경]
+                if (item.관리주기 === 'weekly' && !isTuesday && !showWeeklyForced) {
+                    return false;
+                }
                 return true;
             });
 
-            if (visibleItems.length === 0) return; // 보여줄 아이템 없으면 섹션 숨김
+            if (visibleItems.length === 0) return;
 
             html += `<div id="vendor-section-${vendor}" class="vendor-section">`;
             html += `<h3 style="margin-bottom:10px; color:#4CAF50;">📦 ${vendor}</h3>`;
@@ -224,6 +251,7 @@ function renderUnifiedInventoryForm() {
     formContainer.innerHTML = html;
 }
 
+// [수정] renderItemGroup 함수 (배지가 더 잘 보이도록 스타일 개선)
 function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
     const currentStock = inventory[itemKey] || 0;
     const usage = dailyUsage[itemKey] || 0;
@@ -265,19 +293,19 @@ function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
         btnOnClick = `onclick="setStockValue('${itemKey}', ${yesterdayStock})"`;
     }
 
-    // [NEW] 관리주기 뱃지 표시
+    // [NEW] 관리주기 뱃지 표시 강화
     let cycleBadge = '';
     if (item.관리주기 === 'weekly') {
-        cycleBadge = `<span style="background:#E1F5FE; color:#0288D1; font-size:10px; padding:2px 5px; border-radius:4px; margin-left:5px;">매주 화</span>`;
+        // 눈에 잘 띄는 파란색 배경으로 설정
+        cycleBadge = `<span style="background-color:#E3F2FD; color:#1565C0; font-size:11px; padding:2px 6px; border-radius:4px; margin-left:6px; border: 1px solid #BBDEFB; font-weight:bold;">매주 화요일</span>`;
     }
 
     let html = `
         <div class="item-group compact-group">
             <div class="item-header-compact">
-                <span class="item-name">
+                <span class="item-name" style="display: flex; align-items: center; flex-wrap: wrap;">
                     ${item.품목명}
-                    ${cycleBadge}
-                    ${lastOrderDisplay}
+                    ${cycleBadge} ${lastOrderDisplay}
                 </span>
                 ${item.중요도 ? `<span class="item-importance importance-${item.중요도}">${item.중요도}</span>` : ''}
             </div>
@@ -1212,13 +1240,22 @@ function renderManageItems() {
     
     let html = '<ul class="manage-ul">';
     vendorItems.forEach((item, index) => {
-        // [NEW] 관리주기 텍스트
-        const cycleText = (item.관리주기 === 'weekly') 
-            ? '<span style="color:#0288D1; font-size:11px; margin-left:4px;">[매주 화]</span>' 
-            : '';
+        // 1. 관리주기 텍스트 표시 로직 강화
+        let cycleBadge = '';
+        if (item.관리주기 === 'weekly') {
+            cycleBadge = `<span style="background:#E1F5FE; color:#0288D1; font-size:11px; padding:2px 6px; border-radius:4px; margin-left:4px;">매주 화</span>`;
+        } else {
+            // daily인 경우도 명시적으로 보고 싶다면 아래 주석 해제
+            // cycleBadge = `<span style="background:#f5f5f5; color:#666; font-size:11px; padding:2px 6px; border-radius:4px; margin-left:4px;">매일</span>`;
+        }
         
-        // [NEW] 중요도 텍스트
+        // 2. 중요도 텍스트
         const imp = item.중요도 || '중';
+        let impColor = '#ef6c00'; // 중
+        if (imp === '상') impColor = '#c62828';
+        if (imp === '하') impColor = '#2e7d32';
+        
+        const impBadge = `<span style="font-size:11px; color:${impColor}; font-weight:bold; margin-left:4px;">(${imp})</span>`;
         
         html += `
             <li class="manage-li">
@@ -1229,12 +1266,15 @@ function renderManageItems() {
                 <div class="manage-info">
                     <span class="manage-name">
                         ${item.품목명}
-                        <span style="font-size:11px; color:#ef6c00;">(${imp})</span>
-                        ${cycleText}
+                        ${impBadge}
+                        ${cycleBadge}
                     </span>
                     <span class="manage-unit">${item.발주단위}</span>
                 </div>
-                <button class="btn-delete" onclick="deleteItem('${vendor}', ${index})">삭제</button>
+                <div class="manage-actions">
+                    <button class="btn-edit" onclick="openEditItemModal('${vendor}', ${index})">수정</button>
+                    <button class="btn-delete" onclick="deleteItem('${vendor}', ${index})">삭제</button>
+                </div>
             </li>
         `;
     });
@@ -1299,6 +1339,56 @@ function addNewItem() {
     if (document.getElementById('manageVendorSelect').value === vendor) {
         renderManageItems();
     }
+}
+
+// [NEW] 수정 모달 열기
+function openEditItemModal(vendor, index) {
+    const item = items[vendor][index];
+    if (!item) return;
+
+    document.getElementById('editVendor').value = vendor;
+    document.getElementById('editIndex').value = index;
+    
+    document.getElementById('editName').value = item.품목명;
+    document.getElementById('editUnit').value = item.발주단위;
+    document.getElementById('editImportance').value = item.중요도 || '중';
+    document.getElementById('editCycle').value = item.관리주기 || 'daily';
+
+    document.getElementById('editItemModal').classList.add('active');
+}
+
+// [NEW] 수정 모달 닫기
+function closeEditItemModal() {
+    document.getElementById('editItemModal').classList.remove('active');
+}
+
+// [NEW] 수정사항 저장
+function saveEditItem() {
+    const vendor = document.getElementById('editVendor').value;
+    const index = parseInt(document.getElementById('editIndex').value);
+    
+    const newName = document.getElementById('editName').value.trim();
+    const newUnit = document.getElementById('editUnit').value.trim();
+    const newImp = document.getElementById('editImportance').value;
+    const newCycle = document.getElementById('editCycle').value;
+
+    if (!newName) {
+        showAlert('품목명을 입력해주세요.', 'error');
+        return;
+    }
+
+    // 데이터 업데이트
+    items[vendor][index] = {
+        ...items[vendor][index],
+        "품목명": newName,
+        "발주단위": newUnit,
+        "중요도": newImp,
+        "관리주기": newCycle
+    };
+
+    closeEditItemModal();
+    renderManageItems(); // 리스트 새로고침
+    showAlert('수정되었습니다. 하단의 [저장] 버튼을 눌러 확정하세요.', 'success');
 }
 
 async function saveItemChanges() {
