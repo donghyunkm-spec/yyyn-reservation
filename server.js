@@ -764,8 +764,20 @@ app.post('/api/inventory/orders', (req, res) => {
             orders = JSON.parse(data);
         }
         
-        // 새 발주 추가 (JSON 파일에도 warnings 내용이 같이 저장됩니다. 기록용으로 좋습니다.)
-        orders.push(orderRecord);
+        // [수정된 부분 시작] ---------------------------------------------
+        // 같은 날짜의 발주 내역이 있는지 찾습니다.
+        const existingIndex = orders.findIndex(o => o.date === orderRecord.date);
+
+        if (existingIndex !== -1) {
+            // 이미 해당 날짜에 내역이 있다면 -> 덮어쓰기 (Update)
+            console.log(`🔄 발주 내역 업데이트(덮어쓰기): ${orderRecord.date}`);
+            orders[existingIndex] = orderRecord;
+        } else {
+            // 해당 날짜 내역이 없다면 -> 새로 추가 (Insert)
+            orders.push(orderRecord);
+        }
+
+
         fs.writeFileSync(INVENTORY_ORDERS_FILE, JSON.stringify(orders, null, 2), 'utf8');
         
         // 2. 마지막 발주일 업데이트 로직 (기존과 동일)
