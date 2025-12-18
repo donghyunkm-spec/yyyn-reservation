@@ -887,13 +887,15 @@ textarea {
     text-align: center;
 }
 
-/* 6번 컬럼: 연락처 (2줄 허용, 좁게) */
+/* 6번 컬럼: 연락처 (너비를 제한하여 2줄로 강제 줄바꿈) */
 #allReservationTable th:nth-child(6),
 #allReservationTable td:nth-child(6) {
-    width: 100px;
+    width: 85px;           /* 기본 너비 설정 */
+    max-width: 85px;       /* 최대 너비를 제한하여 강제로 줄바꿈 유도 */
+    white-space: normal;   /* 줄바꿈 허용 */
+    word-break: break-all; /* 번호가 길 경우 문자 단위로 끊어서 줄바꿈 */
     font-size: 12px;
-    word-break: break-all; /* 필요시 줄바꿈 */
-    line-height: 1.2;
+    line-height: 1.3;      /* 줄 간격 조정 */
     color: #666;
 }
 
