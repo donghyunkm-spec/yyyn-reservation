@@ -165,9 +165,7 @@ function toggleWeeklyItems() {
     renderUnifiedInventoryForm(); // 리스트 다시 그리기
 }
 
-// ==========================================================
-// [수정됨] 재고 입력 폼 렌더링 (요일 체크 로직 추가)
-// ==========================================================
+
 // [수정] renderUnifiedInventoryForm 함수 (요일 및 강제표시 로직 적용)
 function renderUnifiedInventoryForm() {
     const formContainer = document.getElementById('inventoryForm');
