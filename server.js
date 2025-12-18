@@ -488,6 +488,19 @@ app.get('/api/inventory/items', (req, res) => {
     }
 });
 
+// ▼▼▼ [추가해야 할 코드] 품목 정보 저장 API ▼▼▼
+app.post('/api/inventory/items', (req, res) => {
+    try {
+        const { items } = req.body; // 프론트엔드에서 보낸 수정된 품목 리스트
+        fs.writeFileSync(INVENTORY_ITEMS_FILE, JSON.stringify(items, null, 2), 'utf8');
+        console.log('✅ 품목 리스트 업데이트 완료');
+        res.json({ success: true });
+    } catch (error) {
+        console.error('품목 저장 오류:', error);
+        res.status(500).json({ success: false, error: '품목 저장 실패' });
+    }
+});
+
 // 현재 재고 조회
 app.get('/api/inventory/current', (req, res) => {
     try {
