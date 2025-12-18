@@ -513,6 +513,8 @@ app.get('/api/inventory/current', (req, res) => {
     }
 });
 
+
+
 // 현재 재고 저장
 app.post('/api/inventory/current', (req, res) => {
     try {
