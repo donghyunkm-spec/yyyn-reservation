@@ -1537,3 +1537,35 @@ button[type="submit"]:active {
 .btn-delete {
     padding: 6px 12px;
 }
+
+/* ==========================================================
+   [긴급 수정] 소수점 입력 시 글자 잘림 현상 해결
+   ========================================================== */
+
+/* 1. 재고 입력 탭 (콤팩트 폼) 수정 */
+/* 단위가 입력창 바깥에 있으므로 내부 여백(45px)을 제거하여 공간 확보 */
+.inventory-row-controls .input-wrapper input {
+    padding: 0 5px !important;   /* 불필요한 오른쪽 패딩 제거 */
+    text-align: center;          /* 텍스트 가운데 정렬 */
+    width: 100% !important;      /* 너비 꽉 채우기 */
+    max-width: none !important;  /* 기존 80px 제한 해제하고 부모 크기에 맞춤 */
+}
+
+/* 2. 하루 사용량 탭 수정 */
+/* 단위가 입력창 안에 겹쳐 있으므로, 오른쪽 정렬을 하여 자연스럽게 보이도록 변경 */
+#standardForm .input-wrapper input {
+    text-align: right;           /* 숫자를 오른쪽으로 정렬 */
+    padding-right: 40px !important; /* 단위가 겹치지 않도록 오른쪽 여백 유지 */
+    padding-left: 10px;          /* 왼쪽 여백 */
+}
+
+/* 3. 공통: 숫자 입력창의 화살표(스피너) 제거 */
+/* 모바일 등 좁은 화면에서 화살표가 공간을 차지해 글자를 가리는 것 방지 */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield; /* 파이어폭스 대응 */
+}
