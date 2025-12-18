@@ -346,12 +346,36 @@ function renderItemGroup(vendor, item, itemKey, lastOrderDate, daysSince) {
     return html;
 }
 
+
+// 1. [NEW] 현재 화면에 보이는 입력값들을 전역 변수(dailyUsage)에 동기화하는 함수
+function captureStandardInput() {
+    const vendorItems = items[currentStandardVendor] || [];
+    
+    vendorItems.forEach(item => {
+        const itemKey = `${currentStandardVendor}_${item.품목명}`;
+        const inputElement = document.getElementById(`usage_${itemKey}`);
+        
+        // 화면에 입력창이 존재한다면, 그 값을 dailyUsage에 업데이트
+        if (inputElement) {
+            const val = inputElement.value.trim();
+            dailyUsage[itemKey] = val === '' ? 0 : parseFloat(val);
+        }
+    });
+}
+
+// 2. [수정] 업체 탭 변경 함수
 function selectStandardVendor(vendor) {
+    // 탭을 바꾸기 전에, 현재 입력된 값들을 먼저 저장(캡처)함
+    captureStandardInput();
+
     currentStandardVendor = vendor;
+    
+    // 버튼 스타일 업데이트
     document.querySelectorAll('#standard-tab .vendor-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.dataset.vendor === vendor) btn.classList.add('active');
     });
+    
     renderStandardForm();
 }
 
@@ -825,39 +849,28 @@ function copyToKakao() {
     });
 }
 
+// 3. [수정] 하루 사용량 저장 함수
 async function saveStandard() {
+    // 저장 버튼 누르는 순간의 입력값도 확실하게 캡처
+    captureStandardInput();
+
     try {
-        const newUsage = { ...dailyUsage };
-        
-        for (const vendor in items) {
-            const vendorItems = items[vendor];
-            vendorItems.forEach(item => {
-                const itemKey = `${vendor}_${item.품목명}`;
-                const inputElement = document.getElementById(`usage_${itemKey}`);
-                if (inputElement) {
-                    const val = inputElement.value.trim();
-                    newUsage[itemKey] = val === '' ? 0 : parseFloat(val);
-                }
-            });
-        }
-        
+        // 이제 dailyUsage 변수에는 모든 업체의 수정된 값이 다 들어있음
         const response = await fetch(`${API_BASE}/api/inventory/daily-usage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usage: newUsage })
+            body: JSON.stringify({ usage: dailyUsage }) // dailyUsage 전체 전송
         });
         
         const result = await response.json();
         
         if (result.success) {
-            dailyUsage = newUsage;
             showAlert('하루 사용량이 저장되었습니다.', 'success');
         } else {
             showAlert('저장 실패', 'error');
         }
     } catch (error) {
         console.error('하루 사용량 저장 오류 (로컬):', error);
-        dailyUsage = newUsage; 
         showAlert('저장되었습니다(로컬).', 'success');
     }
 }

@@ -794,3 +794,114 @@ textarea {
         font-size: 24px;
     }
 }
+
+/* style.css 파일의 맨 아래 혹은 적절한 위치에 다음 코드를 추가/수정하세요 */
+
+/* =========================================
+   1. [NEW] 상단 우측 링크 버튼 스타일
+   ========================================= */
+.header {
+    position: relative; /* 절대 위치 배치를 위한 기준점 */
+}
+
+.top-link-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #795548; /* 초가집 느낌의 갈색, 혹은 눈에 띄는 색상 */
+    color: white;
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.top-link-btn:hover {
+    background-color: #5d4037;
+    transform: translateY(-2px);
+}
+
+/* 모바일 화면에서는 버튼 위치 조정 */
+@media (max-width: 600px) {
+    .top-link-btn {
+        position: static; /* 모바일에서는 흐름에 따름 */
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+}
+
+/* =========================================
+   2. [NEW] 예약현황(표) 가독성 개선
+   ========================================= */
+
+/* 전체 예약 테이블 스타일 재정의 */
+#allReservationTable {
+    font-size: 14px; /* 전체 글자 크기 조정 */
+    table-layout: auto; /* 내용에 따라 너비 자동 조절 */
+}
+
+#allReservationTable th,
+#allReservationTable td {
+    vertical-align: middle; /* 세로 중앙 정렬 */
+    padding: 8px 5px; /* 좌우 여백을 줄여 공간 확보 */
+}
+
+/* 컬럼별 스타일 지정 (nth-child 사용) */
+
+/* 1번 컬럼: 날짜 (2줄 허용) */
+#allReservationTable th:nth-child(1),
+#allReservationTable td:nth-child(1) {
+    width: 70px;
+    font-size: 13px;
+    line-height: 1.2;
+    text-align: center;
+}
+
+/* 2번 컬럼: 시간 (가로 1줄 고정) */
+#allReservationTable th:nth-child(2),
+#allReservationTable td:nth-child(2) {
+    width: 60px;
+    white-space: nowrap; /* 줄바꿈 금지 */
+    text-align: center;
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+/* 3번 컬럼: 예약자명 (가로 1줄 고정, 4글자 기준) */
+#allReservationTable th:nth-child(3),
+#allReservationTable td:nth-child(3) {
+    min-width: 70px;
+    white-space: nowrap; /* 줄바꿈 금지 */
+    text-align: center;
+    font-weight: bold;
+}
+
+/* 4번 컬럼: 인원 (좁게) */
+#allReservationTable th:nth-child(4),
+#allReservationTable td:nth-child(4) {
+    width: 50px;
+    text-align: center;
+}
+
+/* 6번 컬럼: 연락처 (2줄 허용, 좁게) */
+#allReservationTable th:nth-child(6),
+#allReservationTable td:nth-child(6) {
+    width: 100px;
+    font-size: 12px;
+    word-break: break-all; /* 필요시 줄바꿈 */
+    line-height: 1.2;
+    color: #666;
+}
+
+/* 7번 컬럼: 요구사항 (최대 너비 할당) */
+#allReservationTable th:nth-child(7),
+#allReservationTable td:nth-child(7) {
+    min-width: 200px; /* 최소 너비 확보 */
+    text-align: left;
+    white-space: normal; /* 줄바꿈 허용 */
+    line-height: 1.4;
+}
