@@ -605,12 +605,24 @@ if (!fs.existsSync(KAKAO_TOKENS_FILE)) {
 // [NEW] 카카오 알림 관련 함수들
 // ------------------------------------------
 
-// 1. 토큰 저장/갱신 API
+// [긴급 추가] 카카오 토큰 파일 초기화용 주소
+app.get('/reset-kakao', (req, res) => {
+    try {
+        // 빈 배열로 덮어쓰기 (초기화)
+        fs.writeFileSync(KAKAO_TOKENS_FILE, JSON.stringify([], null, 2), 'utf8');
+        console.log('🧹 카카오 토큰 파일이 초기화되었습니다.');
+        res.send('<h1>✅ 토큰 파일이 초기화되었습니다.</h1><p>이제 다시 카카오 로그인을 진행해주세요.</p>');
+    } catch (error) {
+        res.status(500).send('초기화 실패: ' + error.message);
+    }
+});
+
+// [수정된 API] 토큰 발급 및 사용자별 갱신 (중복 방지 로직 추가)
 app.post('/api/kakao-token', async (req, res) => {
     try {
         const { code, redirect_uri } = req.body;
         
-        // 인가 코드로 토큰 발급 요청
+        // 1. 인가 코드로 토큰 발급 요청 (기존과 동일)
         const response = await axios.post('https://kauth.kakao.com/oauth/token', null, {
             params: {
                 grant_type: 'authorization_code',
@@ -622,27 +634,56 @@ app.post('/api/kakao-token', async (req, res) => {
         });
 
         const { access_token, refresh_token } = response.data;
+
+        // 2. [추가됨] 발급받은 토큰으로 '이 사람이 누군지(회원번호)' 확인
+        // 이걸 해야 A관리자인지 B관리자인지 구분이 가능합니다.
+        const userResponse = await axios.get('https://kapi.kakao.com/v2/user/me', {
+            headers: {
+                'Authorization': `Bearer ${access_token}`,
+                'Content-type': 'application/x-www-form-urlencoded;charset=utf-8'
+            }
+        });
         
-        // 기존 토큰 목록 로드
+        const kakaoUserId = userResponse.data.id; // 카카오 고유 회원번호 (변하지 않음)
+
+        // 3. 기존 토큰 파일 읽어오기
         let tokens = [];
         if (fs.existsSync(KAKAO_TOKENS_FILE)) {
             tokens = JSON.parse(fs.readFileSync(KAKAO_TOKENS_FILE, 'utf8'));
         }
 
-        // 새 토큰 추가 (중복 방지를 위해 기존 것과 비교하거나 그냥 추가)
-        // 편의상 3명이므로 그냥 계속 추가하고, 만료된건 나중에 처리
-        tokens.push({
-            access_token,
-            refresh_token,
-            updated_at: new Date().toISOString()
-        });
+        // 4. [핵심] 이미 등록된 사용자인지 확인
+        const existingIndex = tokens.findIndex(t => t.userId === kakaoUserId);
 
+        if (existingIndex !== -1) {
+            // CASE A: 이미 있는 관리자 -> 토큰만 최신으로 교체 (갱신)
+            console.log(`🔄 기존 관리자(ID: ${kakaoUserId})의 토큰을 갱신합니다.`);
+            tokens[existingIndex] = {
+                userId: kakaoUserId,
+                access_token: access_token,
+                // 새 리프레시 토큰이 없으면 기존 것 유지, 있으면 교체
+                refresh_token: refresh_token || tokens[existingIndex].refresh_token,
+                updated_at: new Date().toISOString()
+            };
+        } else {
+            // CASE B: 새로운 관리자 -> 리스트에 추가
+            console.log(`➕ 새로운 관리자(ID: ${kakaoUserId})를 등록합니다.`);
+            tokens.push({
+                userId: kakaoUserId,
+                access_token: access_token,
+                refresh_token: refresh_token,
+                updated_at: new Date().toISOString()
+            });
+        }
+
+        // 5. 파일 저장
         fs.writeFileSync(KAKAO_TOKENS_FILE, JSON.stringify(tokens, null, 2), 'utf8');
-        console.log('✅ 카카오 토큰 등록 완료');
+        console.log(`✅ 현재 등록된 관리자 수: ${tokens.length}명`);
 
         res.json({ success: true, access_token });
+
     } catch (error) {
-        console.error('토큰 발급 실패:', error.response ? error.response.data : error.message);
+        console.error('토큰 발급/갱신 실패:', error.response ? error.response.data : error.message);
         res.status(500).json({ success: false, error: '토큰 발급 실패' });
     }
 });
