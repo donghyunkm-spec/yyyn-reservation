@@ -829,20 +829,39 @@ function closeOrderModal() {
     renderUnifiedInventoryForm();
 }
 
+// inventory.js - 기존 copyToKakao 함수 교체
 function copyToKakao() {
-    let copyText = '📦 발주 리스트\n\n';
+    const today = new Date();
+    const month = today.getMonth() + 1;
+    const date = today.getDate();
+    const time = `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`;
+
+    let copyText = `📦 [발주 리스트 복사]\n📅 ${month}/${date} (${time})\n----------------------------\n`;
     
+    // 화면에 렌더링된 데이터를 기반으로 텍스트 생성
     const orderSections = document.querySelectorAll('.order-section');
+    
     orderSections.forEach(section => {
-        const vendor = section.querySelector('h3').textContent;
-        const items = section.querySelector('.order-items').textContent;
-        copyText += `[${vendor}]\n${items}\n`;
+        const vendor = section.querySelector('h3').textContent.split('(')[0].trim(); // 업체명만 추출
+        const itemsText = section.querySelector('.order-items').innerText; // 내부 텍스트 가져오기
+        
+        copyText += `\n■ ${vendor}\n`;
+        
+        // 기존 텍스트(품목명 3kg)를 한 줄씩 처리
+        const lines = itemsText.split('\n');
+        lines.forEach(line => {
+            if(line.trim()) {
+                // "▫️ 품목명 : 3kg" 형태로 변환
+                // 현재 innerText가 "양파 3망" 형태라면 보기 좋게 꾸밈
+                copyText += `▫️ ${line.trim()}\n`; 
+            }
+        });
     });
     
-    copyText += `\n발주일시: ${new Date().toLocaleString('ko-KR')}`;
-    
+    copyText += `\n----------------------------\n양은이네 재고관리`;
+
     navigator.clipboard.writeText(copyText).then(() => {
-        showAlert('카카오톡 복사 완료! 📋', 'success');
+        showAlert('영수증 형태로 복사 완료! 📋', 'success');
     }).catch(err => {
         console.error('복사 실패:', err);
         showAlert('복사 실패', 'error');

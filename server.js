@@ -763,45 +763,67 @@ async function sendKakaoToAll(messageText) {
 }
 
 // 3. 메시지 내용 생성 함수
+// server.js - 3. 메시지 내용 생성 함수 (영수증 스타일 수정)
 function createAlertMessage(orderData, warnings) {
     const today = new Date();
-    const dateStr = `${today.getMonth() + 1}/${today.getDate()} ${today.getHours()}:${today.getMinutes()}`;
+    const month = today.getMonth() + 1;
+    const date = today.getDate();
+    const time = `${today.getHours()}:${String(today.getMinutes()).padStart(2, '0')}`;
     
-    let msg = `[양은이네 발주 알림]\n📅 ${dateStr}\n\n`;
+    // 헤더: 깔끔한 날짜 표시
+    let msg = `📦 [발주 내역서]\n`;
+    msg += `📅 ${month}월 ${date}일 (${time})\n`;
+    msg += `----------------------------\n`;
+
     let hasIssues = false;
 
-    // 경고(특이사항) 먼저 표시
+    // 1. 경고/확인필요 품목 (가장 먼저 보이게)
     if (warnings && Object.keys(warnings).length > 0) {
+        let warningMsg = "";
         for (const vendor in warnings) {
             const items = warnings[vendor];
             if (items.length > 0) {
                 hasIssues = true;
-                msg += `🚨 ${vendor} 확인필요\n`;
                 items.forEach(item => {
-                    msg += `- ${item.품목명}: ${item.reason}\n`;
+                    warningMsg += `🚨 ${item.품목명}\n   └ ${item.reason}\n`;
                 });
-                msg += `------------------\n`;
             }
         }
-    }
-
-    if (!hasIssues) {
-        msg += "✅ 특이사항 없이 발주되었습니다.\n\n";
-    }
-
-    // 전체 발주 요약
-    msg += "📋 발주 내역 요약\n";
-    for (const vendor in orderData.orders) {
-        const items = orderData.orders[vendor];
-        if (items.length > 0) {
-            msg += `[${vendor}] ${items.length}개 품목\n`;
-            // 너무 길어지지 않게 주요 품목만 나열하거나 생략
-            items.slice(0, 3).forEach(item => {
-                msg += `· ${item.품목명} ${item.orderAmount}${item.displayUnit || item.발주단위}\n`;
-            });
-            if(items.length > 3) msg += `  외 ${items.length - 3}건...\n`;
+        if (hasIssues) {
+            msg += `\n[⚠️ 확인 필요]\n${warningMsg}`;
+            msg += `----------------------------\n`;
         }
     }
+
+    // 2. 업체별 발주 리스트 (보기 좋은 영수증 형태)
+    let hasOrders = false;
+    const vendorOrder = ['삼시세끼', 'SPC', '기타']; // 출력 순서
+    
+    // 순서대로 정렬해서 출력
+    const sortedVendors = Object.keys(orderData.orders).sort((a, b) => {
+        return vendorOrder.indexOf(a) - vendorOrder.indexOf(b);
+    });
+
+    for (const vendor of sortedVendors) {
+        const items = orderData.orders[vendor];
+        if (items && items.length > 0) {
+            hasOrders = true;
+            msg += `\n■ ${vendor}\n`; // 업체명 강조
+            
+            items.forEach(item => {
+                const unit = item.displayUnit || item.발주단위;
+                // 품목명과 수량을 한 줄에 깔끔하게
+                msg += `▫️ ${item.품목명} : ${item.orderAmount}${unit}\n`;
+            });
+        }
+    }
+
+    if (!hasOrders && !hasIssues) {
+        msg += "\n✅ 발주할 품목이 없습니다.\n";
+    }
+
+    msg += `\n----------------------------\n`;
+    msg += `양은이네 재고관리 시스템`;
 
     return msg;
 }
