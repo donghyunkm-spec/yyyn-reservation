@@ -518,8 +518,13 @@ function getDeliveryInfo(vendor) {
 }
 
 // [수정됨] 발주 확인 (경고 로직에서 주간 항목 제외)
+// inventory.js - checkOrderConfirmation 함수 전체 교체
 async function checkOrderConfirmation() {
+    // 1. 두 개의 바구니를 준비합니다.
+    // confirmItems: 화면(모달)에 보여줄 '발주할 모든 항목'
     const confirmItems = { '삼시세끼': [], 'SPC': [], '기타': [] };
+    // realWarnings: 서버(카톡)로 보낼 '진짜 경고 항목' (여기가 비어있으면 알림 안 옴)
+    const realWarnings = { '삼시세끼': [], 'SPC': [], '기타': [] };
     
     const todayStr = new Date().toISOString().split('T')[0];
     const pastRecords = recentHistory.filter(r => r.date !== todayStr);
@@ -535,8 +540,7 @@ async function checkOrderConfirmation() {
             const itemKey = `${vendor}_${item.품목명}`;
             const inputEl = document.getElementById(`current_${itemKey}`);
             
-            // 화면에 없는 품목(오늘 입력 안하는 주간 품목)은 체크 패스
-            if (!inputEl) return;
+            if (!inputEl) return; // 화면에 없는 품목 패스
 
             const currentInputValue = inputEl.value === '' ? 0 : parseFloat(inputEl.value);
             const usage = dailyUsage[itemKey] || 0;
@@ -546,6 +550,7 @@ async function checkOrderConfirmation() {
             let displayQty = 0;
             let displayUnit = item.발주단위;
 
+            // 수량 계산 로직 (기존 동일)
             if (vendor === 'SPC') {
                 const spcInfo = getSPCInfo(item.품목명);
                 displayUnit = spcInfo.unit; 
@@ -564,17 +569,23 @@ async function checkOrderConfirmation() {
             }
             
             const lastOrderDate = lastOrderDates[itemKey] || '';
+            
+            // --- [핵심 수정 부분] 경고 여부 판별 ---
             let needsConfirmation = false;
             let reason = '';
             
+            // 1. 중요 품목인데 발주가 0인 경우
             if (displayQty === 0 && (item.중요도 === '상' || item.중요도 === '중')) {
-                needsConfirmation = true; reason = `중요 품목 미발주`;
+                needsConfirmation = true; 
+                reason = `중요 품목 미발주`;
             }
+            // 2. SPC인데 발주가 0인 경우
             if (vendor === 'SPC' && displayQty === 0) {
-                 needsConfirmation = true; reason = 'SPC 품목 미발주';
+                 needsConfirmation = true; 
+                 reason = 'SPC 품목 미발주';
             }
 
-            // [NEW] 3일 연속 동일 재고 체크 (주간 품목은 제외)
+            // 3. 3일 연속 재고 동일 체크
             if (item.관리주기 !== 'weekly' && currentInputValue > 0 && recordD1 && recordD2) {
                 const stockD1 = recordD1.inventory[vendor] ? recordD1.inventory[vendor][itemKey] : undefined;
                 const stockD2 = recordD2.inventory[vendor] ? recordD2.inventory[vendor][itemKey] : undefined;
@@ -587,6 +598,23 @@ async function checkOrderConfirmation() {
                 }
             }
             
+            // --- 데이터 담기 ---
+            
+            // A. 진짜 경고 항목은 realWarnings에 담음 (카톡 알림용)
+            if (needsConfirmation) {
+                realWarnings[vendor].push({
+                    ...item,
+                    itemKey,
+                    currentStock: currentInputValue,
+                    orderAmount: displayQty,
+                    displayUnit,
+                    reason, // 사유 필수
+                    lastOrderDate
+                });
+            }
+
+            // B. 발주할게 있거나(displayQty > 0) 경고가 있으면 confirmItems에 담음 (화면 확인용)
+            // (즉, 부추처럼 발주량만 있는 경우는 여기만 담김)
             if (needsConfirmation || displayQty > 0) {
                 confirmItems[vendor].push({
                     ...item,
@@ -601,12 +629,14 @@ async function checkOrderConfirmation() {
         });
     }
     
+    // 모달을 띄울지 결정 (발주할 게 있거나 경고가 있으면 띄움)
     const hasConfirmItems = Object.values(confirmItems).some(arr => arr.length > 0);
 
-    currentWarnings = {};
+    // [중요] 전역 변수 업데이트: 경고 알림은 '진짜 문제'가 있는 것만 보냄
+    currentWarnings = realWarnings; 
+
     if (hasConfirmItems) {
-        currentWarnings = JSON.parse(JSON.stringify(confirmItems));
-        showConfirmModal(confirmItems);
+        showConfirmModal(confirmItems); // 화면에는 전체 리스트 보여줌
     } else {
         proceedToOrder();
     }
