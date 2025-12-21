@@ -662,8 +662,8 @@ async function sendKakaoToAll(messageText) {
                     object_type: 'text',
                     text: messageText,
                     link: {
-                        web_url: 'http://localhost:3000', // 가게 시스템 주소
-                        mobile_web_url: 'http://localhost:3000'
+                        web_url: 'https://yyyn-reservation-production.up.railway.app/', // 가게 시스템 주소
+                        mobile_web_url: 'https://yyyn-reservation-production.up.railway.app/'
                     },
                     button_title: '재고 시스템 바로가기'
                 })
