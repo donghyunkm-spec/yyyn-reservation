@@ -935,6 +935,20 @@ app.post('/api/inventory/holidays', (req, res) => {
     }
 });
 
+// [임시] 토큰 파일 내용 확인 및 다운로드용 API
+app.get('/check-tokens', (req, res) => {
+    try {
+        if (fs.existsSync(KAKAO_TOKENS_FILE)) {
+            // 파일을 브라우저에서 바로 다운로드하도록 설정
+            res.download(KAKAO_TOKENS_FILE, 'kakao_tokens.json');
+        } else {
+            res.send('<h1>❌ 토큰 파일이 없습니다. (아직 생성 안됨)</h1>');
+        }
+    } catch (error) {
+        res.status(500).send('파일 읽기 실패: ' + error.message);
+    }
+});
+
 // 서버 시작
 app.listen(PORT, () => {
     console.log(`\n🚀 서버가 포트 ${PORT}에서 실행 중입니다.`);
